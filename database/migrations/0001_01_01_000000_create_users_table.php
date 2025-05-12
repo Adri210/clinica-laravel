@@ -18,9 +18,18 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
+            $table->date('data_nascimento')->nullable(); // Novo campo
+            $table->string('cep')->nullable();  // Novo campo
+            $table->string('rua')->nullable();  // Novo campo
+            $table->string('numero')->nullable();  // Novo campo
+            $table->string('bairro')->nullable();  // Novo campo
+            $table->string('cidade')->nullable();  // Novo campo
+            $table->string('estado')->nullable();  // Novo campo
+            $table->enum('tipo_usuario', ['admin', 'usuario', 'medico'])->default('usuario'); // Novo campo
             $table->timestamps();
         });
 
+        // Resto das tabelas
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
             $table->string('token');

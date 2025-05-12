@@ -1,15 +1,19 @@
 <?php
+
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\MedicoController;
 
 
-
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+Route::post('/login', [UsuarioController::class, 'login']);
+
+
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -34,4 +38,3 @@ Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
 Route::get('/medicos', [MedicoController::class, 'index'])->name('medicos.index');
 Route::get('/medicos/create', [MedicoController::class, 'create'])->name('medicos.create');
 Route::post('/medicos', [UsuarioController::class, 'store'])->name('medicos.store');
-

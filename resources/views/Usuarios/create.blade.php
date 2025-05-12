@@ -77,7 +77,7 @@
                     </div>
                     <div class="col-md-4">
                         <label for="confirmar_senha" class="form-label">Confirmar Senha</label>
-                        <input type="password" class="form-control form-control-sm" id="confirmar_senha" name="confirmar_senha" required>
+                        <input type="password" class="form-control form-control-sm" id="confirmar_senha" name="senha_confirmation" required>
                     </div>
                 </div>
 
@@ -86,8 +86,11 @@
                 </div>
             </form>
         </div>
+        @if (session('success'))
+        <div class="text-red">
+            {{ session('success') }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection
-
-
