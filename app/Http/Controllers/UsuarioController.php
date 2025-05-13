@@ -39,7 +39,7 @@ class UsuarioController extends Controller
     // Criação do usuário
     User::create([
         'name' => $request->nome . ' ' . $request->sobrenome,
-        'email' => $request->input('email', strtolower($request->nome) . '@exemplo.com'),
+        'email' => $request->input('email', strtolower($request->nome) . '@CampoReal.com'),
         'password' => Hash::make($request->senha),
         'data_nascimento' => $request->data_nascimento,
         'cep' => $request->cep,
@@ -69,6 +69,7 @@ class UsuarioController extends Controller
             return redirect()->route('dashboard'); 
         }
 
-        return back()->withErrors(['message' => 'Credenciais inválidas']);
+        return back()->withInput($request->only('email'))
+        ->with('login_error', 'E-mail ou senha incorretos');
     }
 }

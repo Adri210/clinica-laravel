@@ -14,6 +14,15 @@
             height: 100%;
         }
 
+        .login-error {
+            color: #842029;
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            text-align: center;
+        }
+
         .container-fluid {
             margin: 0;
             padding: 0;
@@ -66,28 +75,33 @@
                     <div class="brand-title text-center mb-4">
                         RealClin <span style="color: gold;">★</span>
                     </div>
+                    @if(session('login_error'))
+                        <div class="login-error">
+                            {{ session('login_error') }}
+                        </div>
+                    @endif
                     <form method="POST" action="{{ route('login') }}">
                         @csrf
+
                         <div class="mb-3">
                             <label for="email" class="form-label">E-mail</label>
-                            <input type="email" name="email" id="email" class="form-control" required autofocus>
+                            <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" autofocus>
+                            @error('email')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="mb-3">
                             <label for="password" class="form-label">Senha</label>
-                            <input type="password" name="password" id="password" class="form-control" required>
+                            <input type="password" name="password" id="password" class="form-control @error('password') is-invalid @enderror">
+                            @error('password')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Entrar</button>
                         </div>
-                        @if ($errors->any())
-                        <div class="alert alert-danger">
-                            @foreach ($errors->all() as $error)
-                            <p>{{ $error }}</p>
-                            @endforeach
-                        </div>
-                        @endif
                     </form>
                 </div>
             </div>
