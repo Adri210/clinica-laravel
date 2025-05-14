@@ -17,7 +17,7 @@ Route::post('/login', [UsuarioController::class, 'login']);
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->name('dashboard');
+})->middleware(['auth', 'role:admin'])->name('dashboard');
 
 Route::post('/logout', function () {
     Auth::logout(); // Faz o logout do usuário

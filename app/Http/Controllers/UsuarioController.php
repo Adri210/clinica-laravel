@@ -54,22 +54,33 @@ class UsuarioController extends Controller
     return redirect()->route('usuarios.create')->with('success', 'Usuário cadastrado com sucesso!');
 }
 
-    public function login(Request $request)
-    {
-        $email = $request->input('email');
-        $password = $request->input('password');
+public function login(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email',
+        'password' => 'required|min:6',
+    ]);
 
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6',
-        ]);
+    $user = User::where('email', $request->email)->first();
 
-
-        if (Auth::attempt(['email' => $email, 'password' => $password])) {
-            return redirect()->route('dashboard'); 
-        }
-
-        return back()->withInput($request->only('email'))
-        ->with('login_error', 'E-mail ou senha incorretos');
+    if (!$user || !Hash::check($request->password, $user->password)) {
+        return response()->json(['message' => 'E-mail ou senha incorretos'], 401);
     }
+
+    // Gera o token
+    $token = $user->createToken('auth_token')->plainTextToken;
+
+    return response()->json([
+        'access_token' => $token,
+        'token_type' => 'Bearer',
+        'user' => $user,
+    ]);
+}
+
+public function logout(Request $request)
+{
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json(['message' => 'Logout realizado com sucesso!']);
+}
 }
