@@ -2,39 +2,34 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\MedicoController;
 
-
+// Autenticação
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+
 Route::post('/login', [UsuarioController::class, 'login']);
-
-
+Route::post('/logout', function () {
+    Auth::logout();
+    return redirect('/login');
+})->name('logout');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
-})->name('dashboard');
+})->name('dashboard')->middleware('auth');
 
-Route::post('/logout', function () {
-    Auth::logout(); // Faz o logout do usuário
-    return redirect('/login'); // Redireciona para a página de login
-})->name('logout');
+// Usuários (apenas para admin)
+Route::middleware(['auth', 'check.admin'])->group(function () {
+    Route::resource('usuarios', UsuarioController::class)->except(['show']);
+});
 
-
-// Usuários
-Route::get('/usuarios', [UsuarioController::class, 'index'])->name('usuarios.index');
-Route::get('/usuarios/create', [UsuarioController::class, 'create'])->name('usuarios.create');
-Route::post('/usuarios', [UsuarioController::class, 'store'])->name('usuarios.store');
-
+// Médicos (separado completamente)
+Route::resource('medicos', MedicoController::class)->except(['show']);
 
 // Agenda
-Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
-
-// Médicos
-Route::get('/medicos', [MedicoController::class, 'index'])->name('medicos.index');
-Route::get('/medicos/create', [MedicoController::class, 'create'])->name('medicos.create');
-Route::post('/medicos', [UsuarioController::class, 'store'])->name('medicos.store');
+Route::get('agenda', [AgendaController::class, 'index'])
+    ->name('agenda.index')
+    ->middleware('auth');
