@@ -52,7 +52,7 @@ class UsuarioController extends Controller
     // Criação do usuário
     User::create([
         'name' => $request->nome . ' ' . $request->sobrenome,
-        'email' => $request->input('email', strtolower($request->nome) . '@CampoReal.com'),
+        'email' => $request->input('email', strtolower($request->nome) . '@campoReal.com'),
         'password' => Hash::make($request->senha),
         'data_nascimento' => $request->data_nascimento,
         'cep' => $request->cep,
