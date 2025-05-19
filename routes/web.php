@@ -36,18 +36,12 @@ Route::get('/usuarios', function () {
 })->middleware('auth')->name('usuarios.index');
 
 Route::get('/usuarios/create', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
     return app(UsuarioController::class)->create();
-})->middleware('auth')->name('usuarios.create');
+})->name('usuarios.create');
 
 Route::post('/usuarios', function (Illuminate\Http\Request $request) {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
     return app(UsuarioController::class)->store($request);
-})->middleware('auth')->name('usuarios.store');
+})->name('usuarios.store');
 
 // Agenda (apenas admin)
 Route::get('/agenda', function () {
