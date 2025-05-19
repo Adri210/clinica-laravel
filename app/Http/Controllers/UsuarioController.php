@@ -34,6 +34,19 @@ class UsuarioController extends Controller
         'estado' => 'required|string|max:255',
         'tipo_usuario' => 'required|string|in:admin,usuario,medico',
         'senha' => 'required|string|min:6|confirmed',
+    ], [
+        'nome.required' => 'O nome é obrigatório',
+        'sobrenome.required' => 'O sobrenome é obrigatório',
+        'data_nascimento.required' => 'A data de nascimento é obrigatória',
+        'cep.required' => 'O CEP é obrigatório',
+        'rua.required' => 'A rua é obrigatória',
+        'numero.required' => 'O número é obrigatório',
+        'bairro.required' => 'O bairro é obrigatório',
+        'cidade.required' => 'A cidade é obrigatória',
+        'estado.required' => 'O estado é obrigatório',
+        'tipo_usuario.required' => 'O tipo de usuário é obrigatório',
+        'senha.required' => 'A senha é obrigatória',
+        'senha.confirmed' => 'As senhas não coincidem',
     ]);
 
     // Criação do usuário
@@ -61,26 +74,22 @@ public function login(Request $request)
         'password' => 'required|min:6',
     ]);
 
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user || !Hash::check($request->password, $user->password)) {
-        return response()->json(['message' => 'E-mail ou senha incorretos'], 401);
+    if (Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
+        $request->session()->regenerate();
+        return redirect()->intended('/dashboard');
     }
 
-    // Gera o token
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return response()->json([
-        'access_token' => $token,
-        'token_type' => 'Bearer',
-        'user' => $user,
-    ]);
+    return back()->withErrors([
+        'email' => 'E-mail ou senha incorretos',
+    ])->withInput($request->only('email'));
 }
 
 public function logout(Request $request)
 {
-    $request->user()->currentAccessToken()->delete();
+    Auth::guard('web')->logout();
+    $request->session()->invalidate();
+    $request->session()->regenerateToken();
 
-    return response()->json(['message' => 'Logout realizado com sucesso!']);
+    return redirect('/login');
 }
 }
