@@ -9,7 +9,7 @@ use App\Http\Controllers\MedicoController;
 // Autenticação
 Route::get('/login', function () {
     return view('auth.login');
-})->name('login');
+})->name('login');  
 
 Route::post('/login', [UsuarioController::class, 'login']);
 Route::post('/logout', function () {
@@ -30,6 +30,12 @@ Route::middleware(['auth', 'check.admin'])->group(function () {
 Route::resource('medicos', MedicoController::class)->except(['show']);
 
 // Agenda
-Route::get('agenda', [AgendaController::class, 'index'])
-    ->name('agenda.index')
-    ->middleware('auth');
+Route::middleware(['auth'])->group(function() {
+    Route::controller(AgendaController::class)->prefix('agenda')->name('agenda.')->group(function() {
+        Route::get('/', 'index')->name('index');
+        Route::get('/events', 'getEvents')->name('events');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{evento}', 'update')->name('update');
+        Route::delete('/{evento}', 'destroy')->name('destroy');
+    });
+});
