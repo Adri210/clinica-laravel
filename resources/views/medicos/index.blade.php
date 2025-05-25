@@ -11,7 +11,7 @@
     .table-custom tbody tr:nth-child(even) {
         background-color: #f0f8ff;
     }
-    .badge-manha { background-color: #0d6efd; }
+    .badge-manhã { background-color: #0d6efd; }
     .badge-tarde { background-color: #fd7e14; }
     .badge-noite { background-color: #212529; }
 </style>
@@ -43,7 +43,7 @@
             <thead>
                 <tr>
                     <th>Nome Completo</th>
-                    <th>Idade</th>
+                    <th>Data de nascimento</th>
                     <th>Especialidade</th>
                     <th>Período</th>
                     <th class="text-center">Ações</th>
@@ -53,7 +53,7 @@
                 @forelse($medicos as $medico)
                 <tr>
                     <td>{{ $medico->nome_completo }}</td>
-                    <td>{{ $medico->idade }} anos</td>
+                    <td>{{ $medico->data_nascimento }}</td>
                     <td>{{ $medico->especialidade }}</td>
                     <td>
                         <span class="badge badge-{{ strtolower($medico->periodo) }}">

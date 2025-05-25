@@ -52,8 +52,14 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="especialidade" class="form-label">Especialidade*</label>
-                        <input type="text" class="form-control" id="especialidade" 
-                               name="especialidade" value="{{ old('especialidade') }}" required>
+                        <select class="form-control" id="especialidade" name="especialidade" value="{{ old('especialidade') }}" required>
+                            <option value="Clínica Geral">Clínica Geral</option>
+                            <option value="Ortopedia">Ortopedia</option>
+                            <option value="Cardiologia">Cardiologia</option>
+                            <option value="Pediatria">Pediatria</option>
+                            <option value="Dermatologia">Dermatologia</option>
+                            <option value="Nutrição">Nutrição</option>
+                        </select>
                         <div class="invalid-feedback">Por favor, informe a especialidade.</div>
                     </div>
                     <div class="col-md-6">

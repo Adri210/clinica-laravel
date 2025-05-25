@@ -17,9 +17,9 @@ class Medico extends Model
         'periodo'
     ];
 
-    public function eventos()
+    public function agendas() // Changed from eventos to agendas for clarity and consistency
     {
-        return $this->hasMany(Evento::class);
+        return $this->hasMany(Agenda::class);
     }
 
     public function getNomeCompletoAttribute()
