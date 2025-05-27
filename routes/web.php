@@ -43,13 +43,15 @@ Route::post('/usuarios', function (Illuminate\Http\Request $request) {
     return app(UsuarioController::class)->store($request);
 })->name('usuarios.store');
 
-// Agenda (apenas admin)
-Route::get('/agenda', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
-    return app(AgendaController::class)->index();
-})->middleware('auth')->name('agenda.index');
+    // Agenda
+ Route::middleware(['auth'])->group(function() {
+    Route::controller(AgendaController::class)->prefix('agenda')->name('agenda.')->group(function() {
+        Route::get('/', 'index')->name('index');
+        Route::get('/events', 'getEvents')->name('events');
+        Route::post('/', 'store')->name('store');
+        Route::put('/{id}', 'update')->name('update');
+        Route::delete('/{id}', 'destroy')->name('destroy');
+    });
 
 // Médicos (apenas admin)
 Route::get('/medicos', function () {
