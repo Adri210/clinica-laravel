@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -13,11 +14,49 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // Criar usuário administrador padrão
+        User::create([
+            'name' => 'Admin',
+            'email' => 'admin@camporeal.com',
+            'password' => Hash::make('admin123'),
+            'tipo_usuario' => 'admin',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '00000-000',
+            'rua' => 'Rua Administrativa',
+            'numero' => '1',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
+        ]);
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        // Criar usuário recepcionista padrão
+        User::create([
+            'name' => 'Recepcionista',
+            'email' => 'recepcionista@camporeal.com',
+            'password' => Hash::make('recepcionista123'),
+            'tipo_usuario' => 'recepcionista',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '00000-000',
+            'rua' => 'Rua Administrativa',
+            'numero' => '1',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
+        ]);
+
+        // Criar usuário médico padrão
+        User::create([
+            'name' => 'Médico',
+            'email' => 'medico@camporeal.com',
+            'password' => Hash::make('medico123'),
+            'tipo_usuario' => 'medico',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '00000-000',
+            'rua' => 'Rua Administrativa',
+            'numero' => '1',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
         ]);
     }
 }

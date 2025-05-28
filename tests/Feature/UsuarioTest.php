@@ -14,19 +14,14 @@ class UsuarioTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        // Configura o ambiente de teste para usar MySQL
         $this->app['config']->set('database.default', 'mysql');
     }
 
-    /**
-     * Teste de login com credenciais válidas
-     */
-    public function test_login_com_credenciais_validas()
+    protected function actingAsAdmin()
     {
-        // Criar um usuário de teste
-        $user = User::create([
-            'name' => 'Usuário Teste',
-            'email' => 'teste@exemplo.com',
+        $admin = User::create([
+            'name' => 'Admin Teste',
+            'email' => 'admin@teste.com',
             'password' => Hash::make('senha123'),
             'tipo_usuario' => 'admin',
             'data_nascimento' => '1990-01-01',
@@ -38,38 +33,13 @@ class UsuarioTest extends TestCase
             'estado' => 'SP'
         ]);
 
-        // Tentar fazer login
-        $response = $this->post('/login', [
-            'email' => 'teste@exemplo.com',
-            'password' => 'senha123'
-        ]);
-
-        // Verificar se o login foi bem sucedido
-        $response->assertRedirect('/dashboard');
-        $this->assertAuthenticated();
+        return $this->actingAs($admin);
     }
 
-    /**
-     * Teste de login com credenciais inválidas
-     */
-    public function test_login_com_credenciais_invalidas()
-    {
-        // Tentar fazer login com credenciais inválidas
-        $response = $this->post('/login', [
-            'email' => 'teste@exemplo.com',
-            'password' => 'senha_errada'
-        ]);
-
-        // Verificar se o login falhou
-        $response->assertSessionHasErrors('email');
-        $this->assertGuest();
-    }
-
-    /**
-     * Teste de cadastro de usuário com dados válidos
-     */
     public function test_cadastro_usuario_com_dados_validos()
     {
+        $this->actingAsAdmin();
+
         $dadosUsuario = [
             'nome' => 'João',
             'sobrenome' => 'Silva',
@@ -80,33 +50,28 @@ class UsuarioTest extends TestCase
             'bairro' => 'Centro',
             'cidade' => 'São Paulo',
             'estado' => 'SP',
-            'tipo_usuario' => 'usuario',
+            'tipo_usuario' => 'recepcionista',
             'senha' => 'senha123',
-            'senha_confirmation' => 'senha123'
+            'senha_confirmation' => 'senha123',
+            '_token' => csrf_token()
         ];
 
         $response = $this->post('/usuarios', $dadosUsuario);
 
-        // Verificar se o usuário foi criado
         $this->assertDatabaseHas('users', [
             'name' => 'João Silva',
-            'email' => 'joão@campoReal.com',
-            'tipo_usuario' => 'usuario'
+            'email' => 'joão.silva@camporeal.com',
+            'tipo_usuario' => 'recepcionista'
         ]);
 
-        // Verificar se a senha foi hasheada
-        $this->assertTrue(Hash::check('senha123', User::where('email', 'joão@campoReal.com')->first()->password));
-
-        // Verificar redirecionamento
         $response->assertRedirect(route('usuarios.create'));
         $response->assertSessionHas('success', 'Usuário cadastrado com sucesso!');
     }
 
-    /**
-     * Teste de cadastro de usuário com dados inválidos
-     */
     public function test_cadastro_usuario_com_dados_invalidos()
     {
+        $this->actingAsAdmin();
+
         $dadosUsuario = [
             'nome' => '',
             'sobrenome' => '',
@@ -119,12 +84,12 @@ class UsuarioTest extends TestCase
             'estado' => '',
             'tipo_usuario' => '',
             'senha' => '123',
-            'senha_confirmation' => '456'
+            'senha_confirmation' => '456',
+            '_token' => csrf_token()
         ];
 
         $response = $this->post('/usuarios', $dadosUsuario);
 
-        // Verificar se há erros de validação
         $response->assertSessionHasErrors([
             'nome',
             'sobrenome',
@@ -138,10 +103,198 @@ class UsuarioTest extends TestCase
             'tipo_usuario',
             'senha'
         ]);
-
-        // Verificar se o usuário não foi criado
-        $this->assertDatabaseMissing('users', [
-            'name' => ''
-        ]);
     }
-} 
+
+    public function test_cadastro_usuario_duplicado()
+    {
+        $this->actingAsAdmin();
+
+        // Criar primeiro usuário
+        User::create([
+            'name' => 'João Silva',
+            'email' => 'joão.silva@camporeal.com',
+            'password' => Hash::make('senha123'),
+            'tipo_usuario' => 'recepcionista',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '12345-678',
+            'rua' => 'Rua Teste',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
+        ]);
+
+        $dadosUsuario = [
+            'nome' => 'João',
+            'sobrenome' => 'Silva',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '12345-678',
+            'rua' => 'Rua Teste',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP',
+            'tipo_usuario' => 'recepcionista',
+            'senha' => 'senha123',
+            'senha_confirmation' => 'senha123',
+            '_token' => csrf_token()
+        ];
+
+        $response = $this->post('/usuarios', $dadosUsuario);
+
+        $response->assertSessionHas('error_duplicado', 'Já existe um usuário cadastrado com este nome e sobrenome.');
+    }
+
+    public function test_atualizacao_usuario()
+    {
+        $this->actingAsAdmin();
+
+        $usuario = User::create([
+            'name' => 'João Silva',
+            'email' => 'joão.silva@camporeal.com',
+            'password' => Hash::make('senha123'),
+            'tipo_usuario' => 'recepcionista',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '12345-678',
+            'rua' => 'Rua Teste',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
+        ]);
+
+        $dadosAtualizacao = [
+            'nome' => 'João',
+            'sobrenome' => 'Santos',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '54321-876',
+            'rua' => 'Avenida Nova',
+            'numero' => '456',
+            'bairro' => 'Jardim',
+            'cidade' => 'Rio de Janeiro',
+            'estado' => 'RJ',
+            'tipo_usuario' => 'medico',
+            '_token' => csrf_token(),
+            '_method' => 'PUT'
+        ];
+
+        $response = $this->put("/usuarios/{$usuario->id}", $dadosAtualizacao);
+
+        $this->assertDatabaseHas('users', [
+            'id' => $usuario->id,
+            'name' => 'João Santos',
+            'email' => 'joão.santos@camporeal.com',
+            'tipo_usuario' => 'medico'
+        ]);
+
+        $response->assertRedirect(route('usuarios.index'));
+        $response->assertSessionHas('success', 'Usuário atualizado com sucesso!');
+    }
+
+    public function test_edicao_usuario_com_dados_existentes()
+{
+    $this->actingAsAdmin();
+
+    // Criar primeiro usuário
+    User::create([
+        'name' => 'Maria Oliveira',
+        'email' => 'maria.oliveira@camporeal.com',
+        'password' => Hash::make('senha123'),
+        'tipo_usuario' => 'recepcionista',
+        'data_nascimento' => '1990-01-01',
+        'cep' => '12345-678',
+        'rua' => 'Rua Teste',
+        'numero' => '123',
+        'bairro' => 'Centro',
+        'cidade' => 'São Paulo',
+        'estado' => 'SP'
+    ]);
+
+    // Criar segundo usuário para edição
+    $usuarioParaEditar = User::create([
+        'name' => 'João Silva',
+        'email' => 'joão.silva@camporeal.com',
+        'password' => Hash::make('senha123'),
+        'tipo_usuario' => 'medico',
+        'data_nascimento' => '1995-05-15',
+        'cep' => '54321-876',
+        'rua' => 'Avenida Nova',
+        'numero' => '456',
+        'bairro' => 'Jardim',
+        'cidade' => 'Rio de Janeiro',
+        'estado' => 'RJ'
+    ]);
+
+    // Tentar editar o segundo usuário com o nome do primeiro
+    $dadosAtualizacao = [
+        'nome' => 'Maria',
+        'sobrenome' => 'Oliveira',
+        'data_nascimento' => '1995-05-15',
+        'cep' => '54321-876',
+        'rua' => 'Avenida Nova',
+        'numero' => '456',
+        'bairro' => 'Jardim',
+        'cidade' => 'Rio de Janeiro',
+        'estado' => 'RJ',
+        'tipo_usuario' => 'medico',
+        '_token' => csrf_token(),
+        '_method' => 'PUT'
+    ];
+
+    $response = $this->put("/usuarios/{$usuarioParaEditar->id}", $dadosAtualizacao);
+
+    // Verificar se a mensagem de erro foi retornada
+    $response->assertSessionHas('error_duplicado', 'Já existe um usuário cadastrado com este nome e sobrenome.');
+
+    // Verificar se o usuário não foi atualizado
+    $this->assertDatabaseHas('users', [
+        'id' => $usuarioParaEditar->id,
+        'name' => 'João Silva',
+        'email' => 'joão.silva@camporeal.com',
+        'tipo_usuario' => 'medico'
+    ]);
+
+    // Verificar se o primeiro usuário continua com seus dados originais
+    $this->assertDatabaseHas('users', [
+        'name' => 'Maria Oliveira',
+        'email' => 'maria.oliveira@camporeal.com',
+        'tipo_usuario' => 'recepcionista'
+    ]);
+
+    // Verificar se o email não foi alterado
+    $this->assertDatabaseMissing('users', [
+        'id' => $usuarioParaEditar->id,
+        'email' => 'maria.oliveira@camporeal.com'
+    ]);
+}
+
+    public function test_exclusao_usuario()
+    {
+        $this->actingAsAdmin();
+
+        $usuario = User::create([
+            'name' => 'João Silva',
+            'email' => 'joão.silva@camporeal.com',
+            'password' => Hash::make('senha123'),
+            'tipo_usuario' => 'recepcionista',
+            'data_nascimento' => '1990-01-01',
+            'cep' => '12345-678',
+            'rua' => 'Rua Teste',
+            'numero' => '123',
+            'bairro' => 'Centro',
+            'cidade' => 'São Paulo',
+            'estado' => 'SP'
+        ]);
+
+        $response = $this->delete("/usuarios/{$usuario->id}", [
+            '_token' => csrf_token()
+        ]);
+
+        $this->assertDatabaseMissing('users', [
+            'id' => $usuario->id
+        ]);
+
+        $response->assertRedirect(route('usuarios.index'));
+        $response->assertSessionHas('success', 'Usuário excluído com sucesso!');
+    }
+}

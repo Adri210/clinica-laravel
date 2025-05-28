@@ -25,7 +25,7 @@
                 $table->string('bairro')->nullable();  // Novo campo
                 $table->string('cidade')->nullable();  // Novo campo
                 $table->string('estado')->nullable();  // Novo campo
-                $table->enum('tipo_usuario', ['admin', 'usuario', 'medico'])->default('usuario'); // Novo campo
+                $table->enum('tipo_usuario', ['admin', 'recepcionista', 'medico'])->default('recepcionista'); // Novo campo
                 $table->timestamps();
             });
 
