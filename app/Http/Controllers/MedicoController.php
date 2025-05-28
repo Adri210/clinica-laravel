@@ -52,13 +52,7 @@ class MedicoController extends Controller
         ]);
 
         try {
-            Medico::create([
-                'nome' => $request->nome,
-                'sobrenome' => $request->sobrenome,
-                'data_nascimento' => $request->data_nascimento,
-                'especialidade' => $request->especialidade,
-                'periodo' => $request->periodo
-            ]);
+            Medico::create($request->all());
             
             return redirect()->route('medicos.index')
                 ->with('success', 'Médico cadastrado com sucesso!');
@@ -97,22 +91,10 @@ class MedicoController extends Controller
             ],
             'especialidade' => 'required|string|max:50',
             'periodo' => 'required|in:manhã,tarde,noite'
-        ], [
-            'nome.required' => 'O campo nome é obrigatório.',
-            'sobrenome.required' => 'O campo sobrenome é obrigatório.',
-            'data_nascimento.required' => 'A data de nascimento é obrigatória.',
-            'especialidade.required' => 'A especialidade é obrigatória.',
-            'periodo.required' => 'O período de atendimento é obrigatório.'
         ]);
 
         try {
-            $medico->update([
-                'nome' => $request->nome,
-                'sobrenome' => $request->sobrenome,
-                'data_nascimento' => $request->data_nascimento,
-                'especialidade' => $request->especialidade,
-                'periodo' => $request->periodo
-            ]);
+            $medico->update($request->all());
             
             return redirect()->route('medicos.index')
                 ->with('success', 'Médico atualizado com sucesso!');

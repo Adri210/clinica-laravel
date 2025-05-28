@@ -25,7 +25,7 @@
                 </div>
             @endif
 
-            <form id="medicoForm" action="{{ route('medicos.update', $medico->id) }}" method="POST" class="needs-validation" novalidate>
+            <form id="medicoForm" action="{{ route('medicos.update', $medico) }}" method="POST" class="needs-validation" novalidate>
                 @csrf
                 @method('PUT')
 
@@ -62,9 +62,9 @@
                         <label for="periodo" class="form-label">Período*</label>
                         <select class="form-select" id="periodo" name="periodo" required>
                             <option value="">Selecione...</option>
-                            <option value="manhã" {{ (old('periodo', $medico->periodo) == 'manhã' ? 'selected' : '') }}>Manhã</option>
-                            <option value="tarde" {{ (old('periodo', $medico->periodo) == 'tarde' ? 'selected' : '') }}>Tarde</option>
-                            <option value="noite" {{ (old('periodo', $medico->periodo) == 'noite' ? 'selected' : '') }}>Noite</option>
+                            <option value="manhã" {{ old('periodo', $medico->periodo) == 'manhã' ? 'selected' : '' }}>Manhã</option>
+                            <option value="tarde" {{ old('periodo', $medico->periodo) == 'tarde' ? 'selected' : '' }}>Tarde</option>
+                            <option value="noite" {{ old('periodo', $medico->periodo) == 'noite' ? 'selected' : '' }}>Noite</option>
                         </select>
                         <div class="invalid-feedback">Por favor, selecione o período.</div>
                     </div>
