@@ -31,34 +31,41 @@
                 <div class="row mb-4">
                     <div class="col-md-4">
                         <label for="nome" class="form-label">Nome*</label>
-                        <input type="text" class="form-control" id="nome" name="nome" 
-                               value="{{ old('nome') }}" required>
+                        <input type="text" class="form-control" id="nome" name="nome"
+                               value="{{ old('nome') }}" required maxlength="100">
+                        <small class="form-text text-muted">
+                            <span id="nomeCharCount">0</span>/100 caracteres
+                        </small>
                         <div class="invalid-feedback">Por favor, informe o nome.</div>
                     </div>
                     <div class="col-md-4">
                         <label for="sobrenome" class="form-label">Sobrenome*</label>
-                        <input type="text" class="form-control" id="sobrenome" name="sobrenome" 
-                               value="{{ old('sobrenome') }}" required>
+                        <input type="text" class="form-control" id="sobrenome" name="sobrenome"
+                               value="{{ old('sobrenome') }}" required maxlength="100">
+                        <small class="form-text text-muted">
+                            <span id="sobrenomeCharCount">0</span>/100 caracteres
+                        </small>
                         <div class="invalid-feedback">Por favor, informe o sobrenome.</div>
                     </div>
                     <div class="col-md-4">
                         <label for="data_nascimento" class="form-label">Data Nascimento*</label>
-                        <input type="date" class="form-control" id="data_nascimento" 
+                        <input type="date" class="form-control" id="data_nascimento"
                                name="data_nascimento" value="{{ old('data_nascimento') }}" required>
-                        <div class="invalid-feedback">Data inválida (17-100 anos).</div>
+                        <div class="invalid-feedback">Data inválida (18-80 anos).</div>
                     </div>
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="especialidade" class="form-label">Especialidade*</label>
-                        <select class="form-control" id="especialidade" name="especialidade" value="{{ old('especialidade') }}" required>
-                            <option value="Clínica Geral">Clínica Geral</option>
-                            <option value="Ortopedia">Ortopedia</option>
-                            <option value="Cardiologia">Cardiologia</option>
-                            <option value="Pediatria">Pediatria</option>
-                            <option value="Dermatologia">Dermatologia</option>
-                            <option value="Nutrição">Nutrição</option>
+                        <select class="form-control" id="especialidade" name="especialidade" required>
+                            {{-- O valor old('especialidade') deve ser usado para pré-selecionar --}}
+                            <option value="Clínica Geral" {{ old('especialidade') == 'Clínica Geral' ? 'selected' : '' }}>Clínica Geral</option>
+                            <option value="Ortopedia" {{ old('especialidade') == 'Ortopedia' ? 'selected' : '' }}>Ortopedia</option>
+                            <option value="Cardiologia" {{ old('especialidade') == 'Cardiologia' ? 'selected' : '' }}>Cardiologia</option>
+                            <option value="Pediatria" {{ old('especialidade') == 'Pediatria' ? 'selected' : '' }}>Pediatria</option>
+                            <option value="Dermatologia" {{ old('especialidade') == 'Dermatologia' ? 'selected' : '' }}>Dermatologia</option>
+                            <option value="Nutrição" {{ old('especialidade') == 'Nutrição' ? 'selected' : '' }}>Nutrição</option>
                         </select>
                         <div class="invalid-feedback">Por favor, informe a especialidade.</div>
                     </div>
@@ -84,16 +91,46 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validação da data de nascimento
+    // Função para atualizar o contador de caracteres
+    function updateCharCount(inputElement, countElement) {
+        countElement.textContent = inputElement.value.length;
+    }
+
+    // Campos de nome e sobrenome
+    const nomeInput = document.getElementById('nome');
+    const nomeCharCount = document.getElementById('nomeCharCount');
+    const sobrenomeInput = document.getElementById('sobrenome');
+    const sobrenomeCharCount = document.getElementById('sobrenomeCharCount');
+
+    // Inicializa os contadores com os valores existentes (se houver old input)
+    updateCharCount(nomeInput, nomeCharCount);
+    updateCharCount(sobrenomeInput, sobrenomeCharCount);
+
+    // Adiciona event listeners para atualizar o contador ao digitar
+    nomeInput.addEventListener('input', function() {
+        updateCharCount(nomeInput, nomeCharCount);
+    });
+
+    sobrenomeInput.addEventListener('input', function() {
+        updateCharCount(sobrenomeInput, sobrenomeCharCount);
+    });
+
+    // Validação da data de nascimento (cliente-side)
     const dataNascimento = document.getElementById('data_nascimento');
     dataNascimento.addEventListener('change', function() {
         const data = new Date(this.value);
         const hoje = new Date();
-        const idadeMinima = new Date(hoje.getFullYear() - 17, hoje.getMonth(), hoje.getDate());
-        const idadeMaxima = new Date(hoje.getFullYear() - 100, hoje.getMonth(), hoje.getDate());
+        const idadeMinima = new Date(hoje.getFullYear() - 17, hoje.getMonth(), hoje.getDate()); // Mínimo 17 anos (para ser 18 no próximo aniv.)
+        const idadeMaxima = new Date(hoje.getFullYear() - 100, hoje.getMonth(), hoje.getDate()); // Máximo 100 anos
         
-        if (data > idadeMinima || data < idadeMaxima) {
-            this.setCustomValidity('Data inválida (17-100 anos)');
+        // Ajuste aqui para pegar o dia exato do aniversário
+        const age = hoje.getFullYear() - data.getFullYear();
+        const m = hoje.getMonth() - data.getMonth();
+        const d = hoje.getDate() - data.getDate();
+
+        // Verifica se a data é válida e se a idade está entre 18 e 100
+        if (data.toString() === 'Invalid Date' || age < 18 || age > 100 || (age === 17 && (m < 0 || (m === 0 && d < 0)))) {
+            this.setCustomValidity('O médico deve ter entre 18 e 100 anos.');
         } else {
             this.setCustomValidity('');
         }
@@ -103,6 +140,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
+            // Re-valida a data de nascimento no submit para garantir
+            dataNascimento.dispatchEvent(new Event('change'));
+
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();
@@ -110,6 +150,13 @@ document.addEventListener('DOMContentLoaded', function() {
             form.classList.add('was-validated');
         }, false);
     });
+
+    // Correção para manter a opção selecionada da especialidade após um erro de validação
+    const especialidadeSelect = document.getElementById('especialidade');
+    const oldEspecialidade = "{{ old('especialidade') }}";
+    if (oldEspecialidade) {
+        especialidadeSelect.value = oldEspecialidade;
+    }
 });
 </script>
 @endsection

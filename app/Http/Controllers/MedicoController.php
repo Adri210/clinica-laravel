@@ -77,15 +77,15 @@ class MedicoController extends Controller
                 'date',
                 function ($attribute, $value, $fail) {
                     $dataNascimento = Carbon::parse($value);
-                    $idadeMinima = Carbon::now()->subYears(17);
-                    $idadeMaxima = Carbon::now()->subYears(100);
+                    $idadeMinima = Carbon::now()->subYears(18);
+                    $idadeMaxima = Carbon::now()->subYears(80);
                     
                     if ($dataNascimento->greaterThan($idadeMinima)) {
-                        $fail('O médico deve ter no mínimo 17 anos.');
+                        $fail('O médico deve ter no mínimo 18 anos.');
                     }
                     
                     if ($dataNascimento->lessThan($idadeMaxima)) {
-                        $fail('O médico deve ter no máximo 100 anos.');
+                        $fail('O médico deve ter no máximo 80 anos.');
                     }
                 }
             ],
