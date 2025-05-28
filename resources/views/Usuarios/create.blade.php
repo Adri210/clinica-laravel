@@ -16,8 +16,49 @@ $(document).ready(function(){
         maxlength: 6
     });
 
-    // Validação de data (15 anos atrás)
-    $('#data_nascimento').on('change', function() {
+    // Busca CEP
+    $('#cep').on('blur', function() {
+        var cep = $(this).val().replace(/\D/g, '');
+        
+        if (cep.length === 8) {
+            // Limpa os campos antes de fazer a busca
+            $('#rua').val('');
+            $('#bairro').val('');
+            $('#cidade').val('');
+            $('#estado').val('');
+            
+            // Adiciona indicador de carregamento
+            $(this).addClass('loading');
+            
+            $.ajax({
+                url: `https://viacep.com.br/ws/${cep}/json/`,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    if (!data.erro) {
+                        $('#rua').val(data.logradouro);
+                        $('#bairro').val(data.bairro);
+                        $('#cidade').val(data.localidade);
+                        $('#estado').val(data.uf);
+                    } else {
+                        alert('CEP não encontrado');
+                    }
+                },
+                error: function() {
+                    alert('Erro ao buscar CEP. Tente novamente.');
+                },
+                complete: function() {
+                    // Remove indicador de carregamento
+                    $('#cep').removeClass('loading');
+                }
+            });
+        }
+    });
+
+    // Validação de data (15 anos atrás e não menor que 1900)
+    $('#data_nascimento').on('blur', function() {
+        if (!this.value) return;
+        
         var dataNascimento = new Date(this.value);
         var hoje = new Date();
         var idade = hoje.getFullYear() - dataNascimento.getFullYear();
@@ -27,25 +68,19 @@ $(document).ready(function(){
             idade--;
         }
         
+        var errorMessage = '';
         if (idade < 15) {
-            alert('A idade mínima deve ser 15 anos');
+            errorMessage = 'A idade mínima deve ser 15 anos';
+            this.value = '';
+        } else if (dataNascimento.getFullYear() < 1900) {
+            errorMessage = 'A data não pode ser anterior a 1900';
             this.value = '';
         }
-    });
-
-    // Busca CEP
-    $('#cep').on('blur', function() {
-        var cep = $(this).val().replace(/\D/g, '');
         
-        if (cep.length === 8) {
-            $.get(`https://viacep.com.br/ws/${cep}/json/`, function(data) {
-                if (!data.erro) {
-                    $('#rua').val(data.logradouro);
-                    $('#bairro').val(data.bairro);
-                    $('#cidade').val(data.localidade);
-                    $('#estado').val(data.uf);
-                }
-            });
+        if (errorMessage) {
+            $('#data_nascimento_error').text(errorMessage).show();
+        } else {
+            $('#data_nascimento_error').hide();
         }
     });
 });
@@ -83,10 +118,12 @@ $(document).ready(function(){
                             id="data_nascimento" 
                             name="data_nascimento" 
                             value="{{ old('data_nascimento') }}"
+                            min="1900-01-01"
                             max="{{ date('Y-m-d', strtotime('-15 years')) }}">
                         @error('data_nascimento')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
+                        <div id="data_nascimento_error" class="text-danger mt-1" style="display: none;"></div>
                     </div>
                 </div>
 
@@ -113,7 +150,7 @@ $(document).ready(function(){
                     </div>
                     <div class="col-md-4">
                         <label for="numero" class="form-label">Número</label>
-                        <input type="text" 
+                        <input type="number" 
                             class="form-control form-control-sm @error('numero') is-invalid @enderror" 
                             id="numero" 
                             name="numero" 
