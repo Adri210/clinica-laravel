@@ -6,20 +6,19 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\AgendaController;
 use App\Http\Controllers\MedicoController;
+use App\Models\Medico;
 
 // Rotas públicas (login)
 Route::get('/login', function () {
     return view('auth.login');
 })->name('login');
+
 Route::post('/login', [UsuarioController::class, 'login']);
 
-// Dashboard (apenas admin)
+// Dashboard
 Route::get('/dashboard', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('login')->with('error', 'Acesso não autorizado');
-    }
     return view('dashboard');
-})->middleware('auth')->name('dashboard');
+})->name('dashboard');
 
 // Logout
 Route::post('/logout', function () {
@@ -27,50 +26,20 @@ Route::post('/logout', function () {
     return redirect('/login');
 })->name('logout');
 
-// Usuários (apenas admin)
-Route::get('/usuarios', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
-    return app(UsuarioController::class)->index();
-})->middleware('auth')->name('usuarios.index');
+// Usuários
+Route::resource('usuarios', UsuarioController::class)->except(['show']);
 
-Route::get('/usuarios/create', function () {
-    return app(UsuarioController::class)->create();
-})->name('usuarios.create');
+// Agenda
+Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
+Route::get('/agenda/events', [AgendaController::class, 'getEvents'])->name('agenda.events');
+Route::post('/agenda', [AgendaController::class, 'store'])->name('agenda.store');
+Route::put('/agenda/{event}', [AgendaController::class, 'update'])->name('agenda.update');
+Route::delete('/agenda/{event}', [AgendaController::class, 'destroy'])->name('agenda.destroy');
 
-Route::post('/usuarios', function (Illuminate\Http\Request $request) {
-    return app(UsuarioController::class)->store($request);
-})->name('usuarios.store');
-
-    // Agenda
- Route::middleware(['auth'])->group(function() {
-    Route::controller(AgendaController::class)->prefix('agenda')->name('agenda.')->group(function() {
-        Route::get('/', 'index')->name('index');
-        Route::get('/events', 'getEvents')->name('events');
-        Route::post('/', 'store')->name('store');
-        Route::put('/{id}', 'update')->name('update');
-        Route::delete('/{id}', 'destroy')->name('destroy');
-    });
-
-// Médicos (apenas admin)
-Route::get('/medicos', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
-    return app(MedicoController::class)->index();
-})->middleware('auth')->name('medicos.index');
-
-Route::get('/medicos/create', function () {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
-    return app(MedicoController::class)->create();
-})->middleware('auth')->name('medicos.create');
-
-Route::post('/medicos', function (Illuminate\Http\Request $request) {
-    if (auth()->user()->tipo_usuario !== 'admin') {
-        return redirect()->route('dashboard')->with('error', 'Acesso não autorizado');
-    }
-    return app(UsuarioController::class)->store($request);
-})->middleware('auth')->name('medicos.store');
+// Médicos - Com Route Model Binding
+Route::get('/medicos', [MedicoController::class, 'index'])->name('medicos.index');
+Route::get('/medicos/create', [MedicoController::class, 'create'])->name('medicos.create');
+Route::post('/medicos', [MedicoController::class, 'store'])->name('medicos.store');
+Route::get('/medicos/{medico}/edit', [MedicoController::class, 'edit'])->name('medicos.edit');
+Route::put('/medicos/{medico}', [MedicoController::class, 'update'])->name('medicos.update');
+Route::delete('/medicos/{medico}', [MedicoController::class, 'destroy'])->name('medicos.destroy');

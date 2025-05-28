@@ -18,56 +18,57 @@ class AgendaController extends Controller
     }
 
     public function getEvents(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'start' => 'required|date',
-            'end' => 'required|date',
-            'medico_id' => 'required|exists:medicos,id'
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'start' => 'required|date',
+        'end' => 'required|date',
+        'medico_id' => 'required|exists:medicos,id'
+    ]);
 
-        if ($validator->fails()) {
-            Log::error('Validation failed in getEvents', $validator->errors()->toArray());
-            return response()->json(['error' => 'Parâmetros inválidos'], 400);
-        }
-
-        try {
-            $start = Carbon::parse($request->start)->startOfDay();
-            $end = Carbon::parse($request->end)->endOfDay();
-
-            $events = Agenda::with(['medico' => function($query) {
-                        $query->select('id', 'nome', 'sobrenome');
-                    }])
-                    ->where('medico_id', $request->medico_id)
-                    ->whereBetween('data_hora', [$start, $end])
-                    ->orderBy('data_hora', 'asc')
-                    ->get(['id', 'paciente', 'medico_id', 'especialidade', 'data_hora']);
-
-            $formattedEvents = $events->map(function ($event) {
-                return [
-                    'id' => $event->id,
-                    'title' => $event->paciente . ' - ' . $event->especialidade,
-                    'start' => $event->data_hora->toIso8601String(),
-                    'extendedProps' => [
-                        'paciente' => $event->paciente,
-                        'medico_id' => $event->medico_id,
-                        'medico_nome' => $event->medico->nome . ' ' . $event->medico->sobrenome,
-                        'especialidade' => $event->especialidade // Ensure specialty is passed for consistency
-                    ],
-                    'color' => $this->getEventColor($event->especialidade),
-                    'allDay' => false
-                ];
-            });
-
-            return response()->json($formattedEvents);
-
-        } catch (\Exception $e) {
-            Log::error('Error in getEvents: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString(),
-                'request' => $request->all()
-            ]);
-            return response()->json(['error' => 'Erro ao buscar eventos: ' . $e->getMessage()], 500);
-        }
+    if ($validator->fails()) {
+        Log::error('Validation failed in getEvents', $validator->errors()->toArray());
+        return response()->json(['error' => 'Parâmetros inválidos'], 400);
     }
+
+    try {
+        $start = Carbon::parse($request->start)->startOfDay();
+        $end = Carbon::parse($request->end)->endOfDay();
+
+        $events = Agenda::with(['medico' => function($query) {
+                    $query->select('id', 'nome', 'sobrenome');
+                }])
+                ->where('medico_id', $request->medico_id)
+                ->whereBetween('data_hora', [$start, $end])
+                ->orderBy('data_hora', 'asc')
+                ->get(['id', 'paciente', 'medico_id', 'especialidade', 'data_hora']);
+
+        $formattedEvents = $events->map(function ($event) {
+            return [
+                'id' => $event->id,
+                'title' => $event->paciente . ' - ' . $event->especialidade,
+                'start' => optional($event->data_hora)->toIso8601String(), // Evita erro se for null
+                'extendedProps' => [
+                    'paciente' => $event->paciente,
+                    'medico_id' => $event->medico_id,
+                    'medico_nome' => optional($event->medico)->nome . ' ' . optional($event->medico)->sobrenome,
+                    'especialidade' => $event->especialidade
+                ],
+                'color' => $this->getEventColor($event->especialidade),
+                'allDay' => false
+            ];
+        });
+
+        return response()->json($formattedEvents);
+
+    } catch (\Exception $e) {
+        Log::error('Erro ao buscar eventos na agenda: ' . $e->getMessage(), [
+            'trace' => $e->getTraceAsString(),
+            'request' => $request->all()
+        ]);
+        return response()->json(['error' => 'Erro interno ao buscar eventos.'], 500);
+    }
+}
+
 
     public function store(Request $request)
     {
