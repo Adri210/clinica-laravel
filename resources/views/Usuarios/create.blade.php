@@ -196,7 +196,6 @@ $(document).ready(function(){
                             <option value="">Selecione...</option>
                             <option value="admin" {{ old('tipo_usuario') == 'admin' ? 'selected' : '' }}>Admin</option>
                             <option value="recepcionista" {{ old('tipo_usuario') == 'recepcionista' ? 'selected' : '' }}>Recepcionista</option>
-                            <option value="medico" {{ old('tipo_usuario') == 'medico' ? 'selected' : '' }}>Médico</option>
                         </select>
                         @error('tipo_usuario')
                             <div class="invalid-feedback">{{ $message }}</div>

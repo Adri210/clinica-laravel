@@ -46,7 +46,7 @@ class UsuarioController extends Controller
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
             'estado' => 'required|string|max:2',
-            'tipo_usuario' => 'required|string|in:admin,recepcionista,medico',
+            'tipo_usuario' => 'required|string|in:admin,recepcionista',
             'senha' => 'required|string|min:6|confirmed',
         ], [
             'nome.required' => 'O campo nome é obrigatório.',
@@ -146,7 +146,7 @@ public function update(Request $request, $id)
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
             'estado' => 'required|string|max:2',
-            'tipo_usuario' => 'required|string|in:admin,recepcionista,medico',
+            'tipo_usuario' => 'required|string|in:admin,recepcionista',
         ],[
             'nome.required' => 'O campo nome é obrigatório.',
             'nome.max' => 'O nome não pode ter mais de 255 caracteres.',
