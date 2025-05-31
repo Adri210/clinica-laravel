@@ -85,7 +85,7 @@
 
                         <div class="mb-3">
                             <label for="email" class="form-label">E-mail</label>
-                            <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" autofocus>
+                            <input type="text" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email') }}" autofocus>
                             @error('email')
                             <div class="invalid-feedback">{{ $message }}</div>
                             @enderror

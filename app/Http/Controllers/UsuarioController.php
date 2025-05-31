@@ -223,8 +223,18 @@ public function update(Request $request, $id)
 public function login(Request $request)
 {
     $request->validate([
-        'email' => 'required|email',
+        'email' => [
+            'required',
+            'email',
+            'regex:/^[^@]+@.{2,}\.com$/i'
+        ],
         'password' => 'required|min:6',
+    ], [
+        'email.required' => 'O campo e-mail é obrigatório.',
+        'email.email' => 'O e-mail fornecido não é válido.',
+        'email.regex' => 'O e-mail deve conter um @, pelo menos 3 caracteres após o @ e terminar com .com.',
+        'password.required' => 'O campo senha é obrigatório.',
+        'password.min' => 'A senha deve ter no mínimo 6 caracteres.',
     ]);
 
     if (Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {
