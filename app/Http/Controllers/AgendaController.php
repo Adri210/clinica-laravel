@@ -92,7 +92,6 @@ class AgendaController extends Controller
         try {
             $dataHora = Carbon::createFromFormat('Y-m-d\TH:i', $request->data_hora);
 
-            // Validate time constraints
             if ($dataHora->hour < 7 || $dataHora->hour > 22 || ($dataHora->hour === 22 && $dataHora->minute > 0)) {
                 return response()->json([
                     'success' => false,
@@ -154,7 +153,7 @@ class AgendaController extends Controller
         try {
             $dataHora = Carbon::createFromFormat('Y-m-d\TH:i', $request->data_hora);
 
-            // Validate time constraints
+        
             if ($dataHora->hour < 7 || $dataHora->hour > 22 || ($dataHora->hour === 22 && $dataHora->minute > 0)) {
                 return response()->json([
                     'success' => false,

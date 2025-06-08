@@ -137,7 +137,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pacienteInput = document.getElementById('paciente'); 
     const pacienteCharCount = document.getElementById('pacienteCharCount');
     const modalMedicoIdSelect = document.getElementById('modal_medico_id');
-    const timeValidationFeedback = document.getElementById('time-validation-feedback'); // New: Time validation message
+    const timeValidationFeedback = document.getElementById('time-validation-feedback'); 
 
     let calendar;
     let currentEventId = null;
@@ -230,8 +230,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 pacienteInput.readOnly = false;
                 dataHoraInput.readOnly = false;
                 document.querySelector('#agendaForm button[type="submit"]').disabled = false;
-                timeValidationFeedback.style.display = 'none'; // Hide feedback on new click
-
+                timeValidationFeedback.style.display = 'none'; 
                 const year = clickedDate.getFullYear();
                 const month = String(clickedDate.getMonth() + 1).padStart(2, '0');
                 const day = String(clickedDate.getDate()).padStart(2, '0');
@@ -240,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 dataHoraInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-                // Logic for setting medico_id and especialidade in the modal
+               
                 if (viewAllCheckbox.checked) {
                     document.getElementById('modal-medico-selection').style.display = 'block';
                     modalMedicoIdSelect.value = ''; 
@@ -290,8 +289,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const minutes = String(eventDate.getMinutes()).padStart(2, '0');
 
                 dataHoraInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
-                timeValidationFeedback.style.display = 'none'; // Hide feedback on event click
-
+                timeValidationFeedback.style.display = 'none'; 
                 if (eventDate < today) {
                     pacienteInput.readOnly = true;
                     dataHoraInput.readOnly = true;
@@ -327,7 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
 
-                // New: Frontend time validation for drag-and-drop
+                
                 const eventHour = eventDate.getHours();
                 const eventMinute = eventDate.getMinutes();
                 if (eventHour < 7 || eventHour > 22 || (eventHour === 22 && eventMinute > 0)) {
@@ -398,7 +396,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                // If the response is not OK, try to parse it as JSON to get error messages
+                
                 return response.json().then(err => { throw err; });
             }
             return response.json();
@@ -409,7 +407,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return saveEvent(eventData)
             .then(data => {
                 if (!data.success) {
-                    calendar.refetchEvents(); // Revert event position if update fails
+                    calendar.refetchEvents(); 
                     throw new Error(data.message || 'Erro ao atualizar evento');
                 }
                 return data;
@@ -417,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Erro ao atualizar evento:', error);
                 alert('Erro ao atualizar consulta: ' + error.message);
-                calendar.refetchEvents(); // Revert on failure
+                calendar.refetchEvents(); 
             });
     }
 
@@ -505,7 +503,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     }
 
-    // New: Frontend validation for time slot
+  
     dataHoraInput.addEventListener('change', function() {
         const selectedDateTime = new Date(this.value);
         const selectedHour = selectedDateTime.getHours();
@@ -534,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Re-run frontend time validation on submit
+   
         const selectedHour = eventDate.getHours();
         const selectedMinute = eventDate.getMinutes();
         if (selectedHour < 7 || selectedHour > 22 || (selectedHour === 22 && selectedMinute > 0)) {
