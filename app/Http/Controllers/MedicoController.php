@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Medico;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Illuminate\Validation\Rule; // Import Rule for unique validation
+use Illuminate\Validation\Rule; 
 
 class MedicoController extends Controller
 {
@@ -27,7 +27,6 @@ class MedicoController extends Controller
                 'required',
                 'string',
                 'max:100',
-                // Ensure unique combination of nome and sobrenome
                 Rule::unique('medicos')->where(function ($query) use ($request) {
                     return $query->where('sobrenome', $request->sobrenome);
                 })
@@ -68,7 +67,7 @@ class MedicoController extends Controller
         ]);
 
         try {
-            // Convert periodo to lowercase before saving
+            
             $data = $request->all();
             $data['periodo'] = strtolower($data['periodo']);
             Medico::create($data);
@@ -93,7 +92,7 @@ class MedicoController extends Controller
                 'required',
                 'string',
                 'max:100',
-                // Ensure unique combination of nome and sobrenome, ignoring current medico
+               
                 Rule::unique('medicos')->where(function ($query) use ($request) {
                     return $query->where('sobrenome', $request->sobrenome);
                 })->ignore($medico->id)

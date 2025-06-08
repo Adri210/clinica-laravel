@@ -8,13 +8,12 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Hash;
-use Carbon\Carbon; // Import Carbon for easier date manipulation
+use Carbon\Carbon; 
 
 class MedicoTest extends TestCase
 {
     use RefreshDatabase;
-    use WithFaker; // Use WithFaker trait
-
+    use WithFaker; 
     protected function actingAsAdmin()
     {
         $admin = User::factory()->create([
@@ -34,9 +33,9 @@ class MedicoTest extends TestCase
         $data = [
             'nome' => 'João',
             'sobrenome' => 'Silva',
-            'data_nascimento' => '1980-01-01', // Valid age (over 18)
+            'data_nascimento' => '1980-01-01', 
             'especialidade' => 'Cardiologia',
-            'periodo' => 'manhã', // Use lowercase as per validation rule
+            'periodo' => 'manhã',
         ];
 
         $response = $this->post(route('medicos.store'), $data);
@@ -46,7 +45,7 @@ class MedicoTest extends TestCase
             'nome' => 'João',
             'sobrenome' => 'Silva',
             'especialidade' => 'Cardiologia',
-            'periodo' => 'manhã', // Assert lowercase
+            'periodo' => 'manhã', 
         ]);
     }
 
@@ -56,11 +55,11 @@ public function test_cadastro_medico_com_dados_invalidos()
     $this->actingAsAdmin();
 
     $data = [
-        'nome' => '', // Empty
-        'sobrenome' => '', // Empty
-        'data_nascimento' => '2024-99-99', // Data malformada, mas evita erro de parsing
-        'especialidade' => '', // Empty
-        'periodo' => 'ValorInvalido', // Invalid period value
+        'nome' => '', 
+        'sobrenome' => '', 
+        'data_nascimento' => '2024-99-99', 
+        'especialidade' => '', 
+        'periodo' => 'ValorInvalido', 
     ];
 
     $response = $this->post(route('medicos.store'), $data);
@@ -87,18 +86,18 @@ public function test_cadastro_medico_com_dados_invalidos()
         ]);
 
         $data = [
-            'nome' => 'Maria', // Duplicate name
-            'sobrenome' => 'Souza', // Duplicate surname
-            'data_nascimento' => '1990-05-15', // Different date, but name/surname are the same
+            'nome' => 'Maria', 
+            'sobrenome' => 'Souza', 
+            'data_nascimento' => '1990-05-15', 
             'especialidade' => 'Pediatria',
             'periodo' => 'tarde',
         ];
 
         $response = $this->post(route('medicos.store'), $data);
 
-        // Assert the specific error message for duplicate name/sobrenome
+        
         $response->assertSessionHasErrors(['nome' => 'Já existe um médico com este nome e sobrenome.']);
-        $this->assertDatabaseCount('medicos', 1); // Only the first medico should exist
+        $this->assertDatabaseCount('medicos', 1); 
     }
 
  
@@ -153,7 +152,7 @@ public function test_cadastro_medico_com_dados_invalidos()
             'periodo' => 'tarde',
         ]);
 
-        // Attempt to update medico2 to have the same name and surname as medico1
+       
         $data = [
             'nome' => 'Lucas',
             'sobrenome' => 'Martins',
@@ -165,11 +164,11 @@ public function test_cadastro_medico_com_dados_invalidos()
         $response = $this->put(route('medicos.update', $medico2), $data);
 
         $response->assertSessionHasErrors(['nome' => 'Já existe outro médico com este nome e sobrenome.']);
-        // Assert that medico2's data was NOT changed
+       
         $this->assertDatabaseHas('medicos', [
             'id' => $medico2->id,
-            'nome' => 'Pedro', // Should still be Pedro
-            'sobrenome' => 'Costa', // Should still be Costa
+            'nome' => 'Pedro', 
+            'sobrenome' => 'Costa', 
             'especialidade' => 'Geral',
             'periodo' => 'tarde',
         ]);
@@ -188,13 +187,13 @@ public function test_cadastro_medico_com_dados_invalidos()
             'periodo' => 'manhã',
         ]);
 
-        // Attempt to update the medico with its own existing name and surname
+        
         $data = [
             'nome' => 'João',
             'sobrenome' => 'Silva',
-            'data_nascimento' => '1980-01-01', // No change in date
-            'especialidade' => 'Cardiologia', // Changed specialty
-            'periodo' => 'tarde', // Changed period
+            'data_nascimento' => '1980-01-01', 
+            'especialidade' => 'Cardiologia', 
+            'periodo' => 'tarde', 
         ];
 
         $response = $this->put(route('medicos.update', $medico), $data);
@@ -249,7 +248,7 @@ public function test_cadastro_medico_com_dados_invalidos()
     {
         $this->actingAsAdmin();
 
-        // Data that results in an age less than 18 (e.g., 17 years old)
+        
         $data = [
             'nome' => 'Jovem',
             'sobrenome' => 'Doutor',
@@ -268,7 +267,7 @@ public function test_cadastro_medico_com_dados_invalidos()
     {
         $this->actingAsAdmin();
 
-        // Data that results in an age more than 100 (e.g., 101 years old)
+        
         $data = [
             'nome' => 'Velho',
             'sobrenome' => 'Doutor',

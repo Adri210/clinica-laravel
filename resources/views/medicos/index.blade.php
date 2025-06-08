@@ -53,7 +53,7 @@
                 @forelse($medicos as $medico)
                 <tr>
                     <td>{{ $medico->nome_completo }}</td>
-                    <td>{{ $medico->data_nascimento }}</td>
+                    <td>{{ \Carbon\Carbon::parse($medico->data_nascimento)->format('d/m/Y') }}</td>
                     <td>{{ $medico->especialidade }}</td>
                     <td>
                         <span class="badge badge-{{ strtolower($medico->periodo) }}">

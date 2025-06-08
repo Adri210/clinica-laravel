@@ -46,8 +46,7 @@
                         <label for="data_nascimento" class="form-label">Data Nascimento*</label>
                         <input type="date" class="form-control" id="data_nascimento" 
                                name="data_nascimento" 
-                               value="{{ old('data_nascimento', $medico->data_nascimento) }}" required>
-                        {{-- Updated invalid feedback message --}}
+                               value="{{ old('data_nascimento', $medico->data_nascimento->format('Y-m-d')) }}" required>
                         <div class="invalid-feedback">O médico deve ter entre 18 e 100 anos.</div>
                     </div>
                 </div>
@@ -55,7 +54,6 @@
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="especialidade" class="form-label">Especialidade*</label>
-                        {{-- Changed to select for consistency and controlled input --}}
                         <select class="form-control" id="especialidade" name="especialidade" required>
                             <option value="">Selecione...</option>
                             <option value="Clínica Geral" {{ old('especialidade', $medico->especialidade) == 'Clínica Geral' ? 'selected' : '' }}>Clínica Geral</option>
@@ -64,7 +62,6 @@
                             <option value="Pediatria" {{ old('especialidade', $medico->especialidade) == 'Pediatria' ? 'selected' : '' }}>Pediatria</option>
                             <option value="Dermatologia" {{ old('especialidade', $medico->especialidade) == 'Dermatologia' ? 'selected' : '' }}>Dermatologia</option>
                             <option value="Nutrição" {{ old('especialidade', $medico->especialidade) == 'Nutrição' ? 'selected' : '' }}>Nutrição</option>
-                            {{-- Add other specialties as needed --}}
                         </select>
                         <div class="invalid-feedback">Por favor, informe a especialidade.</div>
                     </div>
@@ -90,17 +87,16 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Validação da data de nascimento
     const dataNascimento = document.getElementById('data_nascimento');
+    
     dataNascimento.addEventListener('change', function() {
-        const data = new Date(this.value + 'T00:00:00'); // Add time to ensure correct date interpretation
+        const data = new Date(this.value);
         const hoje = new Date();
         
         let age = hoje.getFullYear() - data.getFullYear();
         const m = hoje.getMonth() - data.getMonth();
-        const d = hoje.getDate() - data.getDate();
-
-        if (m < 0 || (m === 0 && d < 0)) {
+        
+        if (m < 0 || (m === 0 && hoje.getDate() < data.getDate())) {
             age--;
         }
         
@@ -111,14 +107,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initial validation check for edit form if data already exists
     dataNascimento.dispatchEvent(new Event('change'));
 
-    // Validação Bootstrap
     const forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
-            // Re-valida a data de nascimento no submit para garantir
             dataNascimento.dispatchEvent(new Event('change'));
 
             if (!form.checkValidity()) {

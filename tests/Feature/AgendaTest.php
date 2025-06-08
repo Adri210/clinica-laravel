@@ -57,7 +57,6 @@ class AgendaTest extends TestCase
         ]);
     }
 
-
     public function test_cadastro_agenda_com_dados_invalidos()
     {
         $this->actingAsAdmin();
@@ -155,7 +154,6 @@ class AgendaTest extends TestCase
         $response->assertJsonFragment([
             'errors' => [
                 'data_hora' => ['The data hora field must be a date after or equal to now.']
-
             ]
         ]);
         $this->assertDatabaseCount('agendas', 0);
@@ -166,7 +164,7 @@ class AgendaTest extends TestCase
         $this->actingAsAdmin();
 
         $medico = Medico::factory()->create();
-        $dataHoraFora = Carbon::now()->addDays(1)->setHour(6)->setMinute(0)->setSecond(0); 
+        $dataHoraFora = Carbon::now()->addDays(1)->setHour(6)->setMinute(0)->setSecond(0);
 
         $data = [
             'medico_id' => $medico->id,
@@ -197,10 +195,10 @@ class AgendaTest extends TestCase
         ]);
 
         $response = $this->putJson(route('agenda.update', $agenda), [
-            'medico_id' => null, 
-            'data_hora' => '', 
-            'paciente' => '', 
-            'especialidade' => '', 
+            'medico_id' => null,
+            'data_hora' => '',
+            'paciente' => '',
+            'especialidade' => '',
         ]);
 
         $response->assertStatus(422);
@@ -223,7 +221,7 @@ class AgendaTest extends TestCase
         $medico = Medico::factory()->create();
         $agenda = Agenda::factory()->create([
             'medico_id' => $medico->id,
-            'data_hora' => Carbon::now()->addDays(5)->format('Y-m-d H:i:s'), // Criado no futuro
+            'data_hora' => Carbon::now()->addDays(5)->format('Y-m-d H:i:s'),
             'paciente' => 'Paciente Futuro',
             'especialidade' => $medico->especialidade,
         ]);
@@ -282,7 +280,6 @@ class AgendaTest extends TestCase
         ]);
     }
 
-
     public function test_cadastro_agenda_horario_duplicado_para_medico()
     {
         $this->actingAsAdmin();
@@ -290,41 +287,84 @@ class AgendaTest extends TestCase
         $medico = Medico::factory()->create();
         $dataHora = Carbon::now()->addDays(1)->setHour(10)->setMinute(0)->setSecond(0);
 
-
+        // Cria o primeiro agendamento
         Agenda::factory()->create([
             'medico_id' => $medico->id,
             'data_hora' => $dataHora,
-            'paciente' => 'Paciente Existente',
+            'paciente' => 'Paciente Original',
             'especialidade' => $medico->especialidade,
         ]);
 
-
+        // Tenta criar um segundo agendamento para o mesmo médico no mesmo horário
         $response = $this->postJson(route('agenda.store'), [
             'medico_id' => $medico->id,
             'data_hora' => $dataHora->format('Y-m-d\TH:i'),
-            'paciente' => 'Paciente Duplicado',
+            'paciente' => 'Novo Paciente', // Paciente diferente
             'especialidade' => $medico->especialidade,
         ]);
 
-        $response->assertStatus(422); 
-        $response->assertJsonFragment(['success' => false]);
-
-        $response->assertJsonValidationErrors(['medico_id']);
+        // Verifica o status de conflito
+        $response->assertStatus(409);
         $response->assertJsonFragment([
-            'errors' => [
-                'medico_id' => ['The medico id has already been taken.']
-
-            ]
+            'success' => false,
+            'message' => 'Já existe um agendamento para este médico no mesmo horário.'
         ]);
 
+        // Verifica que só existe um agendamento no banco
         $this->assertDatabaseCount('agendas', 1);
         $this->assertDatabaseHas('agendas', [
             'medico_id' => $medico->id,
             'data_hora' => $dataHora->toDateTimeString(),
-            'paciente' => 'Paciente Existente',
+            'paciente' => 'Paciente Original',
         ]);
-        $this->assertDatabaseMissing('agendas', [
-            'paciente' => 'Paciente Duplicado',
+    }
+
+    public function test_atualizacao_agenda_horario_duplicado_para_medico()
+    {
+        $this->actingAsAdmin();
+
+        $medico = Medico::factory()->create();
+        $dataHora1 = Carbon::now()->addDays(1)->setHour(10)->setMinute(0)->setSecond(0);
+        $dataHora2 = Carbon::now()->addDays(1)->setHour(11)->setMinute(0)->setSecond(0);
+
+        // Cria dois agendamentos
+        $agenda1 = Agenda::factory()->create([
+            'medico_id' => $medico->id,
+            'data_hora' => $dataHora1,
+            'paciente' => 'Paciente 1',
+            'especialidade' => $medico->especialidade,
+        ]);
+
+        $agenda2 = Agenda::factory()->create([
+            'medico_id' => $medico->id,
+            'data_hora' => $dataHora2,
+            'paciente' => 'Paciente 2',
+            'especialidade' => $medico->especialidade,
+        ]);
+
+        // Tenta mover o segundo agendamento para o mesmo horário do primeiro
+        $response = $this->putJson(route('agenda.update', $agenda2), [
+            'medico_id' => $medico->id,
+            'data_hora' => $dataHora1->format('Y-m-d\TH:i'),
+            'paciente' => 'Paciente 2',
+            'especialidade' => $medico->especialidade,
+        ]);
+
+        // Verifica o status de conflito
+        $response->assertStatus(409);
+        $response->assertJsonFragment([
+            'success' => false,
+            'message' => 'Já existe um agendamento para este médico no mesmo horário.'
+        ]);
+
+        // Verifica que os agendamentos originais permanecem inalterados
+        $this->assertDatabaseHas('agendas', [
+            'id' => $agenda1->id,
+            'data_hora' => $dataHora1->toDateTimeString(),
+        ]);
+        $this->assertDatabaseHas('agendas', [
+            'id' => $agenda2->id,
+            'data_hora' => $dataHora2->toDateTimeString(),
         ]);
     }
 }

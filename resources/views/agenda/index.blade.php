@@ -205,7 +205,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentEventId = null;
 
     function showToast(message, type = 'info', title = 'Notificação') {
-        
         liveToast.className = 'toast';
         liveToast.classList.add(type);
         
@@ -473,7 +472,13 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                return response.json().then(err => { throw err; });
+                return response.json().then(err => { 
+                    // Verifica se é um erro de conflito de agendamento
+                    if (response.status === 409) {
+                        throw new Error('Já existe um agendamento para este paciente no mesmo horário com este médico.');
+                    }
+                    throw err; 
+                });
             }
             return response.json();
         });
@@ -650,7 +655,12 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Erro:', error);
-                showToast('Erro ao salvar consulta: ' + error.message, 'error', 'Erro');
+                // Mensagem personalizada para conflito de agendamento
+                if (error.message.includes('Já existe um agendamento')) {
+                    showToast(error.message, 'warning', 'Agendamento duplicado');
+                } else {
+                    showToast('Erro ao salvar consulta: ' + error.message, 'error', 'Erro');
+                }
             });
     });
 
