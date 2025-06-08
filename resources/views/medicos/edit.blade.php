@@ -47,24 +47,34 @@
                         <input type="date" class="form-control" id="data_nascimento" 
                                name="data_nascimento" 
                                value="{{ old('data_nascimento', $medico->data_nascimento) }}" required>
-                        <div class="invalid-feedback">Data inválida (17-100 anos).</div>
+                        {{-- Updated invalid feedback message --}}
+                        <div class="invalid-feedback">O médico deve ter entre 18 e 100 anos.</div>
                     </div>
                 </div>
 
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <label for="especialidade" class="form-label">Especialidade*</label>
-                        <input type="text" class="form-control" id="especialidade" 
-                               name="especialidade" value="{{ old('especialidade', $medico->especialidade) }}" required>
+                        {{-- Changed to select for consistency and controlled input --}}
+                        <select class="form-control" id="especialidade" name="especialidade" required>
+                            <option value="">Selecione...</option>
+                            <option value="Clínica Geral" {{ old('especialidade', $medico->especialidade) == 'Clínica Geral' ? 'selected' : '' }}>Clínica Geral</option>
+                            <option value="Ortopedia" {{ old('especialidade', $medico->especialidade) == 'Ortopedia' ? 'selected' : '' }}>Ortopedia</option>
+                            <option value="Cardiologia" {{ old('especialidade', $medico->especialidade) == 'Cardiologia' ? 'selected' : '' }}>Cardiologia</option>
+                            <option value="Pediatria" {{ old('especialidade', $medico->especialidade) == 'Pediatria' ? 'selected' : '' }}>Pediatria</option>
+                            <option value="Dermatologia" {{ old('especialidade', $medico->especialidade) == 'Dermatologia' ? 'selected' : '' }}>Dermatologia</option>
+                            <option value="Nutrição" {{ old('especialidade', $medico->especialidade) == 'Nutrição' ? 'selected' : '' }}>Nutrição</option>
+                            {{-- Add other specialties as needed --}}
+                        </select>
                         <div class="invalid-feedback">Por favor, informe a especialidade.</div>
                     </div>
                     <div class="col-md-6">
                         <label for="periodo" class="form-label">Período*</label>
                         <select class="form-select" id="periodo" name="periodo" required>
                             <option value="">Selecione...</option>
-                            <option value="manhã" {{ old('periodo', $medico->periodo) == 'manhã' ? 'selected' : '' }}>Manhã</option>
-                            <option value="tarde" {{ old('periodo', $medico->periodo) == 'tarde' ? 'selected' : '' }}>Tarde</option>
-                            <option value="noite" {{ old('periodo', $medico->periodo) == 'noite' ? 'selected' : '' }}>Noite</option>
+                            <option value="manhã" {{ old('periodo', strtolower($medico->periodo)) == 'manhã' ? 'selected' : '' }}>Manhã</option>
+                            <option value="tarde" {{ old('periodo', strtolower($medico->periodo)) == 'tarde' ? 'selected' : '' }}>Tarde</option>
+                            <option value="noite" {{ old('periodo', strtolower($medico->periodo)) == 'noite' ? 'selected' : '' }}>Noite</option>
                         </select>
                         <div class="invalid-feedback">Por favor, selecione o período.</div>
                     </div>
@@ -83,22 +93,34 @@ document.addEventListener('DOMContentLoaded', function() {
     // Validação da data de nascimento
     const dataNascimento = document.getElementById('data_nascimento');
     dataNascimento.addEventListener('change', function() {
-        const data = new Date(this.value);
+        const data = new Date(this.value + 'T00:00:00'); // Add time to ensure correct date interpretation
         const hoje = new Date();
-        const idadeMinima = new Date(hoje.getFullYear() - 17, hoje.getMonth(), hoje.getDate());
-        const idadeMaxima = new Date(hoje.getFullYear() - 100, hoje.getMonth(), hoje.getDate());
         
-        if (data > idadeMinima || data < idadeMaxima) {
-            this.setCustomValidity('Data inválida (17-100 anos)');
+        let age = hoje.getFullYear() - data.getFullYear();
+        const m = hoje.getMonth() - data.getMonth();
+        const d = hoje.getDate() - data.getDate();
+
+        if (m < 0 || (m === 0 && d < 0)) {
+            age--;
+        }
+        
+        if (isNaN(data.getTime()) || age < 18 || age > 100) {
+            this.setCustomValidity('O médico deve ter entre 18 e 100 anos.');
         } else {
             this.setCustomValidity('');
         }
     });
 
+    // Initial validation check for edit form if data already exists
+    dataNascimento.dispatchEvent(new Event('change'));
+
     // Validação Bootstrap
     const forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
+            // Re-valida a data de nascimento no submit para garantir
+            dataNascimento.dispatchEvent(new Event('change'));
+
             if (!form.checkValidity()) {
                 event.preventDefault();
                 event.stopPropagation();

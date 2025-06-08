@@ -47,6 +47,34 @@
         gap: 10px;
         margin-bottom: 15px;
     }
+
+    /* Estilos para os toasts */
+    .toast-container {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 1100;
+    }
+
+    .toast {
+        border-left: 4px solid;
+    }
+
+    .toast.error {
+        border-left-color: #dc3545;
+    }
+
+    .toast.warning {
+        border-left-color: #ffc107;
+    }
+
+    .toast.success {
+        border-left-color: #28a745;
+    }
+
+    .toast.info {
+        border-left-color: #17a2b8;
+    }
 </style>
 
 <div class="container mt-5">
@@ -121,6 +149,35 @@
     </div>
 </div>
 
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja cancelar esta consulta?</p>
+                <p class="text-muted">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Confirmar Exclusão</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container">
+    <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto" id="toastTitle">Notificação</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Fechar"></button>
+        </div>
+        <div class="toast-body" id="toastMessage"></div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -128,19 +185,40 @@ document.addEventListener('DOMContentLoaded', function() {
     const medicoContainer = document.getElementById('medico-container');
     const medicoSelect = document.getElementById('medico');
     const calendarEl = document.getElementById('calendar');
-    const modal = new bootstrap.Modal(document.getElementById('agendaModal'));
+    const agendaModal = new bootstrap.Modal(document.getElementById('agendaModal'));
+    const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     const form = document.getElementById('agendaForm');
     const eventList = document.getElementById('event-list');
     const deleteButton = document.getElementById('deleteEventButton');
+    const confirmDeleteButton = document.getElementById('confirmDeleteButton');
     const especialidadeInput = document.getElementById('especialidade');
     const dataHoraInput = document.getElementById('data_hora');
     const pacienteInput = document.getElementById('paciente'); 
     const pacienteCharCount = document.getElementById('pacienteCharCount');
     const modalMedicoIdSelect = document.getElementById('modal_medico_id');
     const timeValidationFeedback = document.getElementById('time-validation-feedback'); 
+    const liveToast = document.getElementById('liveToast');
+    const toastMessage = document.getElementById('toastMessage');
+    const toastTitle = document.getElementById('toastTitle');
 
     let calendar;
     let currentEventId = null;
+
+    function showToast(message, type = 'info', title = 'Notificação') {
+        
+        liveToast.className = 'toast';
+        liveToast.classList.add(type);
+        
+        toastTitle.textContent = title;
+        toastMessage.textContent = message;
+        
+        const toast = new bootstrap.Toast(liveToast);
+        toast.show();
+        
+        setTimeout(() => {
+            toast.hide();
+        }, 5000);
+    }
 
     const localeSettings = {
         monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
@@ -182,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
             noEventsText: localeSettings.noEventsText,
             moreLinkText: localeSettings.moreLinkText,
             events: function(fetchInfo, successCallback, failureCallback) {
-                eventList.innerHTML = '<p class="text-muted">Carregando eventos...</p>';
+                eventList.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
 
                 const url = new URL('/agenda/events', window.location.origin);
                 url.searchParams.append('start', fetchInfo.start.toISOString());
@@ -207,6 +285,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.error('Erro ao buscar eventos:', error);
                         eventList.innerHTML = '<p class="text-danger">Erro ao carregar eventos.</p>';
                         failureCallback(error);
+                        showToast('Erro ao carregar eventos do calendário', 'error');
                     });
             },
             dateClick: function(info) {
@@ -215,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 today.setHours(0, 0, 0, 0);
 
                 if (clickedDate < today) {
-                    alert('Não é possível agendar consultas para datas passadas.');
+                    showToast('Não é possível agendar consultas para datas passadas.', 'warning', 'Atenção');
                     return;
                 }
 
@@ -239,7 +318,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 dataHoraInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
-               
                 if (viewAllCheckbox.checked) {
                     document.getElementById('modal-medico-selection').style.display = 'block';
                     modalMedicoIdSelect.value = ''; 
@@ -259,7 +337,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
                 
-                modal.show();
+                agendaModal.show();
             },
             eventClick: function(info) {
                 const event = info.event;
@@ -304,7 +382,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     modalMedicoIdSelect.disabled = false;
                 }
 
-                modal.show();
+                agendaModal.show();
             },
             eventDidMount: function(info) {
                 info.el.setAttribute('title',
@@ -320,16 +398,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 today.setHours(0, 0, 0, 0);
 
                 if (eventDate < today) {
-                    alert('Não é possível mover consultas para datas passadas.');
+                    showToast('Não é possível mover consultas para datas passadas.', 'warning', 'Atenção');
                     info.revert(); 
                     return;
                 }
 
-                
                 const eventHour = eventDate.getHours();
                 const eventMinute = eventDate.getMinutes();
                 if (eventHour < 7 || eventHour > 22 || (eventHour === 22 && eventMinute > 0)) {
-                    alert('Não é possível agendar consultas fora do horário permitido (07:00 às 22:00).');
+                    showToast('Não é possível agendar consultas fora do horário permitido (07:00 às 22:00).', 'warning', 'Horário inválido');
                     info.revert();
                     return;
                 }
@@ -361,11 +438,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const method = eventData.id ? 'PUT' : 'POST';
 
         const medicoIdToSave = document.getElementById('modal-medico-selection').style.display !== 'none' 
-                               ? modalMedicoIdSelect.value 
-                               : medicoSelect.value;
+                                 ? modalMedicoIdSelect.value 
+                                 : medicoSelect.value;
 
         if (!medicoIdToSave) {
-            alert('Por favor, selecione um médico.');
+            showToast('Por favor, selecione um médico.', 'warning', 'Dados incompletos');
             return Promise.reject(new Error('Médico não selecionado.'));
         }
 
@@ -396,7 +473,6 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(response => {
             if (!response.ok) {
-                
                 return response.json().then(err => { throw err; });
             }
             return response.json();
@@ -410,17 +486,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     calendar.refetchEvents(); 
                     throw new Error(data.message || 'Erro ao atualizar evento');
                 }
+                showToast('Consulta atualizada com sucesso!', 'success', 'Sucesso');
                 return data;
             })
             .catch(error => {
                 console.error('Erro ao atualizar evento:', error);
-                alert('Erro ao atualizar consulta: ' + error.message);
+                showToast('Erro ao atualizar consulta: ' + error.message, 'error', 'Erro');
                 calendar.refetchEvents(); 
             });
     }
 
     function deleteEvent(eventId) {
-        if (confirm(`Deseja realmente excluir a consulta?`)) {
+        confirmDeleteModal.show();
+        
+        confirmDeleteButton.onclick = function() {
             fetch(`/agenda/${eventId}`, {
                 method: 'DELETE',
                 headers: {
@@ -437,19 +516,20 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .then(data => {
                 if (data.success) {
-                    modal.hide();
+                    agendaModal.hide();
+                    confirmDeleteModal.hide();
                     calendar.refetchEvents();
                     updateDayEvents();
-                    alert('Consulta cancelada com sucesso!');
+                    showToast('Consulta cancelada com sucesso!', 'success', 'Sucesso');
                 } else {
                     throw new Error(data.message || 'Erro ao excluir evento');
                 }
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao cancelar consulta: ' + error.message);
+                showToast('Erro ao cancelar consulta: ' + error.message, 'error', 'Erro');
             });
-        }
+        };
     }
 
     function updateDayEvents() {
@@ -465,7 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
             url.searchParams.append('medico_id', medicoSelect.value);
         }
 
-        eventList.innerHTML = '<p class="text-muted">Carregando agendamentos...</p>';
+        eventList.innerHTML = '<div class="d-flex justify-content-center"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Carregando...</span></div></div>';
 
         fetch(url)
             .then(response => {
@@ -500,10 +580,11 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Erro ao buscar eventos do dia:', error);
                 eventList.innerHTML = '<p class="text-danger">Erro ao carregar agendamentos.</p>';
+                showToast('Erro ao carregar agendamentos do dia', 'error');
             });
     }
 
-  
+    // Validação do horário
     dataHoraInput.addEventListener('change', function() {
         const selectedDateTime = new Date(this.value);
         const selectedHour = selectedDateTime.getHours();
@@ -513,6 +594,7 @@ document.addEventListener('DOMContentLoaded', function() {
             timeValidationFeedback.style.display = 'block';
             this.classList.add('is-invalid');
             document.querySelector('#agendaForm button[type="submit"]').disabled = true;
+            showToast('Agendamentos só podem ser feitos entre 07:00 e 22:00.', 'warning', 'Horário inválido');
         } else {
             timeValidationFeedback.style.display = 'none';
             this.classList.remove('is-invalid');
@@ -520,6 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Submit do formulário
     form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -528,15 +611,14 @@ document.addEventListener('DOMContentLoaded', function() {
         today.setHours(0, 0, 0, 0);
 
         if (eventDate < today) {
-            alert('Não é possível agendar consultas para datas passadas.');
+            showToast('Não é possível agendar consultas para datas passadas.', 'warning', 'Atenção');
             return;
         }
 
-   
         const selectedHour = eventDate.getHours();
         const selectedMinute = eventDate.getMinutes();
         if (selectedHour < 7 || selectedHour > 22 || (selectedHour === 22 && selectedMinute > 0)) {
-            alert('Agendamentos só podem ser feitos entre 07:00 e 22:00.');
+            showToast('Agendamentos só podem ser feitos entre 07:00 e 22:00.', 'warning', 'Horário inválido');
             return;
         }
 
@@ -553,14 +635,14 @@ document.addEventListener('DOMContentLoaded', function() {
         saveEvent(eventData)
             .then(data => {
                 if (data.success) {
-                    modal.hide();
+                    agendaModal.hide();
                     calendar.refetchEvents();
                     updateDayEvents();
 
                     if (eventId) {
-                        alert('Consulta atualizada com sucesso!');
+                        showToast('Consulta atualizada com sucesso!', 'success', 'Sucesso');
                     } else {
-                        alert('Consulta agendada com sucesso!');
+                        showToast('Consulta agendada com sucesso!', 'success', 'Sucesso');
                     }
                 } else {
                     throw new Error(data.message || 'Erro ao salvar consulta');
@@ -568,18 +650,20 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Erro:', error);
-                alert('Erro ao salvar consulta: ' + error.message);
+                showToast('Erro ao salvar consulta: ' + error.message, 'error', 'Erro');
             });
     });
 
+    // Botão de exclusão
     deleteButton.addEventListener('click', function() {
         if (currentEventId) {
             deleteEvent(currentEventId);
         } else {
-            alert('Nenhum evento selecionado para excluir.');
+            showToast('Nenhum evento selecionado para excluir.', 'warning', 'Atenção');
         }
     });
 
+    // Filtro de médicos
     viewAllCheckbox.addEventListener('change', function() {
         medicoContainer.style.display = this.checked ? 'none' : 'block';
         if (this.checked) {
@@ -593,6 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateDayEvents();
     });
 
+    // Seleção de médico
     medicoSelect.addEventListener('change', function() {
         if (!viewAllCheckbox.checked) {
             updateDayEvents();
@@ -600,6 +685,7 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.refetchEvents();
     });
 
+    // Contador de caracteres para o nome do paciente
     if (pacienteInput.value) {
         pacienteCharCount.textContent = pacienteInput.value.length;
     }
@@ -614,6 +700,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Inicializa o calendário
     initCalendar();
 });
 </script>

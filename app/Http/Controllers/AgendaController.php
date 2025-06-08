@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule; // Adicione esta linha!
+
 
 class AgendaController extends Controller
 {
@@ -77,21 +79,41 @@ class AgendaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'paciente' => 'required|string|max:100',
-            'medico_id' => 'required|exists:medicos,id',
+            'medico_id' => [
+                'required',
+                'exists:medicos,id',
+                // Regra UNIQUE para medico_id + data_hora
+                Rule::unique('agendas')->where(function ($query) use ($request) {
+                    $dataHoraString = $request->input('data_hora'); // Use input() para maior segurança
+                    try {
+                        // Tenta converter para Carbon para a query unique
+                        $dataHoraCarbon = Carbon::createFromFormat('Y-m-d\TH:i', $dataHoraString);
+                        return $query->where('data_hora', $dataHoraCarbon->toDateTimeString());
+                    } catch (\InvalidArgumentException $e) {
+                        // Se o formato da data_hora já for inválido, a validação 'date_format' pegará.
+                        // Aqui, apenas garantimos que a query não quebre.
+                        return $query->where('data_hora', null);
+                    }
+                }),
+            ],
             'especialidade' => 'required|string|max:255',
-            'data_hora' => 'required|date_format:Y-m-d\TH:i'
+            // Agora, vamos usar a regra after_or_equal:now para lidar com datas passadas
+            // Isso gera um erro no array 'errors' como os outros
+            'data_hora' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => $validator->errors()->first()
+                'message' => 'Erro de validação.',
+                'errors' => $validator->errors() // Retorna todos os erros de validação
             ], 422);
         }
 
         try {
             $dataHora = Carbon::createFromFormat('Y-m-d\TH:i', $request->data_hora);
 
+            // Mantenha a validação de horário (7h-22h) aqui, pois é uma regra de negócio específica
             if ($dataHora->hour < 7 || $dataHora->hour > 22 || ($dataHora->hour === 22 && $dataHora->minute > 0)) {
                 return response()->json([
                     'success' => false,
@@ -138,22 +160,36 @@ class AgendaController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'paciente' => 'required|string|max:100',
-            'medico_id' => 'required|exists:medicos,id',
+            'medico_id' => [
+                'required',
+                'exists:medicos,id',
+                // Regra UNIQUE para medico_id + data_hora, ignorando o ID atual
+                Rule::unique('agendas')->where(function ($query) use ($request) {
+                    $dataHoraString = $request->input('data_hora');
+                    try {
+                        $dataHoraCarbon = Carbon::createFromFormat('Y-m-d\TH:i', $dataHoraString);
+                        return $query->where('data_hora', $dataHoraCarbon->toDateTimeString());
+                    } catch (\InvalidArgumentException $e) {
+                        return $query->where('data_hora', null);
+                    }
+                })->ignore($id)
+            ],
             'especialidade' => 'required|string|max:100',
-            'data_hora' => 'required|date_format:Y-m-d\TH:i'
+            'data_hora' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now'
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
-                'message' => $validator->errors()->first()
+                'message' => 'Erro de validação.',
+                'errors' => $validator->errors()
             ], 422);
         }
 
         try {
             $dataHora = Carbon::createFromFormat('Y-m-d\TH:i', $request->data_hora);
 
-        
+            // Mantenha a validação de horário (7h-22h) aqui
             if ($dataHora->hour < 7 || $dataHora->hour > 22 || ($dataHora->hour === 22 && $dataHora->minute > 0)) {
                 return response()->json([
                     'success' => false,
