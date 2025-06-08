@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Carbon\Carbon;
 
 class Medico extends Model
 {
@@ -14,7 +15,11 @@ class Medico extends Model
         'sobrenome',
         'data_nascimento',
         'especialidade',
-        'periodo'
+        'periodo',
+    ];
+
+    protected $casts = [
+        'data_nascimento' => 'date',
     ];
 
     public function agendas()
@@ -29,6 +34,10 @@ class Medico extends Model
 
     public function getIdadeAttribute()
     {
-        return now()->diffInYears($this->data_nascimento);
+        if ($this->data_nascimento instanceof Carbon) {
+            return now()->diffInYears($this->data_nascimento);
+        }
+
+        return null;
     }
 }

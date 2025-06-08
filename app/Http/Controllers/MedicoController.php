@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Medico;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Illuminate\Validation\Rule; // Import Rule for unique validation
 
 class MedicoController extends Controller
 {
@@ -22,37 +23,55 @@ class MedicoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required|string|max:100',
+            'nome' => [
+                'required',
+                'string',
+                'max:100',
+                // Ensure unique combination of nome and sobrenome
+                Rule::unique('medicos')->where(function ($query) use ($request) {
+                    return $query->where('sobrenome', $request->sobrenome);
+                })
+            ],
             'sobrenome' => 'required|string|max:100',
             'data_nascimento' => [
                 'required',
                 'date',
-                function ($attribute, $value, $fail) {
+            function ($attribute, $value, $fail) {
+                try {
                     $dataNascimento = Carbon::parse($value);
-                    $idadeMinima = Carbon::now()->subYears(17);
-                    $idadeMaxima = Carbon::now()->subYears(100);
-                    
-                    if ($dataNascimento->greaterThan($idadeMinima)) {
-                        $fail('O médico deve ter no mínimo 17 anos.');
-                    }
-                    
-                    if ($dataNascimento->lessThan($idadeMaxima)) {
-                        $fail('O médico deve ter no máximo 100 anos.');
-                    }
+                } catch (\Exception $e) {
+                    $fail('A data de nascimento é inválida.');
+                return;
                 }
+
+                    $today = Carbon::now();
+                    $age = $dataNascimento->diffInYears($today);
+
+                if ($age < 18) {
+                    $fail('O médico deve ter no mínimo 18 anos.');
+                }
+                if ($age > 100) {
+                    $fail('O médico deve ter no máximo 100 anos.');
+                }
+            }
             ],
             'especialidade' => 'required|string|max:50',
             'periodo' => 'required|in:manhã,tarde,noite'
         ], [
             'nome.required' => 'O campo nome é obrigatório.',
+            'nome.unique' => 'Já existe um médico com este nome e sobrenome.',
             'sobrenome.required' => 'O campo sobrenome é obrigatório.',
             'data_nascimento.required' => 'A data de nascimento é obrigatória.',
             'especialidade.required' => 'A especialidade é obrigatória.',
-            'periodo.required' => 'O período de atendimento é obrigatório.'
+            'periodo.required' => 'O período de atendimento é obrigatório.',
+            'periodo.in' => 'O período de atendimento selecionado é inválido.'
         ]);
 
         try {
-            Medico::create($request->all());
+            // Convert periodo to lowercase before saving
+            $data = $request->all();
+            $data['periodo'] = strtolower($data['periodo']);
+            Medico::create($data);
             
             return redirect()->route('medicos.index')
                 ->with('success', 'Médico cadastrado com sucesso!');
@@ -70,31 +89,49 @@ class MedicoController extends Controller
     public function update(Request $request, Medico $medico)
     {
         $request->validate([
-            'nome' => 'required|string|max:100',
+            'nome' => [
+                'required',
+                'string',
+                'max:100',
+                // Ensure unique combination of nome and sobrenome, ignoring current medico
+                Rule::unique('medicos')->where(function ($query) use ($request) {
+                    return $query->where('sobrenome', $request->sobrenome);
+                })->ignore($medico->id)
+            ],
             'sobrenome' => 'required|string|max:100',
             'data_nascimento' => [
                 'required',
                 'date',
                 function ($attribute, $value, $fail) {
                     $dataNascimento = Carbon::parse($value);
-                    $idadeMinima = Carbon::now()->subYears(18);
-                    $idadeMaxima = Carbon::now()->subYears(80);
-                    
-                    if ($dataNascimento->greaterThan($idadeMinima)) {
+                    $today = Carbon::now();
+                    $age = $dataNascimento->diffInYears($today);
+
+                    if ($age < 18) {
                         $fail('O médico deve ter no mínimo 18 anos.');
                     }
-                    
-                    if ($dataNascimento->lessThan($idadeMaxima)) {
-                        $fail('O médico deve ter no máximo 80 anos.');
+                    if ($age > 100) {
+                        $fail('O médico deve ter no máximo 100 anos.');
                     }
                 }
             ],
             'especialidade' => 'required|string|max:50',
             'periodo' => 'required|in:manhã,tarde,noite'
+        ], [
+            'nome.required' => 'O campo nome é obrigatório.',
+            'nome.unique' => 'Já existe outro médico com este nome e sobrenome.',
+            'sobrenome.required' => 'O campo sobrenome é obrigatório.',
+            'data_nascimento.required' => 'A data de nascimento é obrigatória.',
+            'especialidade.required' => 'A especialidade é obrigatória.',
+            'periodo.required' => 'O período de atendimento é obrigatório.',
+            'periodo.in' => 'O período de atendimento selecionado é inválido.'
         ]);
 
         try {
-            $medico->update($request->all());
+            // Convert periodo to lowercase before saving
+            $data = $request->all();
+            $data['periodo'] = strtolower($data['periodo']);
+            $medico->update($data);
             
             return redirect()->route('medicos.index')
                 ->with('success', 'Médico atualizado com sucesso!');
