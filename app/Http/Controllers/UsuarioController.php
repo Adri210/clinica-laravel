@@ -46,7 +46,7 @@ class UsuarioController extends Controller
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
             'estado' => 'required|string|max:2',
-            'tipo_usuario' => 'required|string|in:admin,recepcionista,medico',
+            'tipo_usuario' => 'required|string|in:admin,recepcionista',
             'senha' => 'required|string|min:6|confirmed',
         ], [
             'nome.required' => 'O campo nome é obrigatório.',
@@ -146,7 +146,7 @@ public function update(Request $request, $id)
             'bairro' => 'required|string|max:255',
             'cidade' => 'required|string|max:255',
             'estado' => 'required|string|max:2',
-            'tipo_usuario' => 'required|string|in:admin,recepcionista,medico',
+            'tipo_usuario' => 'required|string|in:admin,recepcionista',
         ],[
             'nome.required' => 'O campo nome é obrigatório.',
             'nome.max' => 'O nome não pode ter mais de 255 caracteres.',
@@ -223,8 +223,18 @@ public function update(Request $request, $id)
 public function login(Request $request)
 {
     $request->validate([
-        'email' => 'required|email',
+        'email' => [
+            'required',
+            'email',
+            'regex:/^[^@]+@.{2,}\.com$/i'
+        ],
         'password' => 'required|min:6',
+    ], [
+        'email.required' => 'O campo e-mail é obrigatório.',
+        'email.email' => 'O e-mail fornecido não é válido.',
+        'email.regex' => 'O e-mail deve conter um @, pelo menos 3 caracteres após o @ e terminar com .com.',
+        'password.required' => 'O campo senha é obrigatório.',
+        'password.min' => 'A senha deve ter no mínimo 6 caracteres.',
     ]);
 
     if (Auth::guard('web')->attempt(['email' => $request->email, 'password' => $request->password])) {

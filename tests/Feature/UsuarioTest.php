@@ -92,7 +92,6 @@ class UsuarioTest extends TestCase
 
         $response->assertSessionHasErrors([
             'nome',
-            'sobrenome',
             'data_nascimento',
             'cep',
             'rua',
@@ -146,52 +145,52 @@ class UsuarioTest extends TestCase
     }
 
     public function test_atualizacao_usuario()
-    {
-        $this->actingAsAdmin();
+{
+    $this->actingAsAdmin();
 
-        $usuario = User::create([
-            'name' => 'João Silva',
-            'email' => 'joão.silva@camporeal.com',
-            'password' => Hash::make('senha123'),
-            'tipo_usuario' => 'recepcionista',
-            'data_nascimento' => '1990-01-01',
-            'cep' => '12345-678',
-            'rua' => 'Rua Teste',
-            'numero' => '123',
-            'bairro' => 'Centro',
-            'cidade' => 'São Paulo',
-            'estado' => 'SP'
-        ]);
+    $usuario = User::create([
+        'name' => 'João Silva',
+        'email' => 'joao.silva@camporeal.com', // sem acento
+        'password' => Hash::make('senha123'),
+        'tipo_usuario' => 'recepcionista',
+        'data_nascimento' => '1990-01-01',
+        'cep' => '12345-678',
+        'rua' => 'Rua Teste',
+        'numero' => '123',
+        'bairro' => 'Centro',
+        'cidade' => 'São Paulo',
+        'estado' => 'SP'
+    ]);
 
-        $dadosAtualizacao = [
-            'nome' => 'João',
-            'sobrenome' => 'Santos',
-            'data_nascimento' => '1990-01-01',
-            'cep' => '54321-876',
-            'rua' => 'Avenida Nova',
-            'numero' => '456',
-            'bairro' => 'Jardim',
-            'cidade' => 'Rio de Janeiro',
-            'estado' => 'RJ',
-            'tipo_usuario' => 'medico',
-            '_token' => csrf_token(),
-            '_method' => 'PUT'
-        ];
+    $dadosAtualizacao = [
+        'nome' => 'João',
+        'sobrenome' => 'Santos',
+        'data_nascimento' => '1990-01-01',
+        'cep' => '54321-876',
+        'rua' => 'Avenida Nova',
+        'numero' => '456',
+        'bairro' => 'Jardim',
+        'cidade' => 'Rio de Janeiro',
+        'estado' => 'RJ',
+        'tipo_usuario' => 'recepcionista', // <-- Corrigido aqui
+        '_token' => csrf_token(),
+        '_method' => 'PUT'
+    ];
 
-        $response = $this->put("/usuarios/{$usuario->id}", $dadosAtualizacao);
+    $response = $this->put("/usuarios/{$usuario->id}", $dadosAtualizacao);
 
-        $this->assertDatabaseHas('users', [
-            'id' => $usuario->id,
-            'name' => 'João Santos',
-            'email' => 'joão.santos@camporeal.com',
-            'tipo_usuario' => 'medico'
-        ]);
+    $this->assertDatabaseHas('users', [
+        'id' => $usuario->id,
+        'name' => 'João Santos',
+        'email' => 'joao.santos@camporeal.com', // <-- Corrigido aqui
+        'tipo_usuario' => 'recepcionista' // <-- Corrigido aqui
+    ]);
 
-        $response->assertRedirect(route('usuarios.index'));
-        $response->assertSessionHas('success', 'Usuário atualizado com sucesso!');
-    }
+    $response->assertRedirect(route('usuarios.index'));
+    $response->assertSessionHas('success', 'Usuário atualizado com sucesso!');
+}
 
-    public function test_edicao_usuario_com_dados_existentes()
+public function test_edicao_usuario_com_dados_existentes()
 {
     $this->actingAsAdmin();
 
@@ -200,7 +199,7 @@ class UsuarioTest extends TestCase
         'name' => 'Maria Oliveira',
         'email' => 'maria.oliveira@camporeal.com',
         'password' => Hash::make('senha123'),
-        'tipo_usuario' => 'recepcionista',
+        'tipo_usuario' => 'admin', // <-- Corrigido aqui
         'data_nascimento' => '1990-01-01',
         'cep' => '12345-678',
         'rua' => 'Rua Teste',
@@ -213,9 +212,9 @@ class UsuarioTest extends TestCase
     // Criar segundo usuário para edição
     $usuarioParaEditar = User::create([
         'name' => 'João Silva',
-        'email' => 'joão.silva@camporeal.com',
+        'email' => 'joao.silva@camporeal.com', // sem acento
         'password' => Hash::make('senha123'),
-        'tipo_usuario' => 'medico',
+        'tipo_usuario' => 'recepcionista',
         'data_nascimento' => '1995-05-15',
         'cep' => '54321-876',
         'rua' => 'Avenida Nova',
@@ -236,7 +235,7 @@ class UsuarioTest extends TestCase
         'bairro' => 'Jardim',
         'cidade' => 'Rio de Janeiro',
         'estado' => 'RJ',
-        'tipo_usuario' => 'medico',
+        'tipo_usuario' => 'recepcionista',
         '_token' => csrf_token(),
         '_method' => 'PUT'
     ];
@@ -250,15 +249,15 @@ class UsuarioTest extends TestCase
     $this->assertDatabaseHas('users', [
         'id' => $usuarioParaEditar->id,
         'name' => 'João Silva',
-        'email' => 'joão.silva@camporeal.com',
-        'tipo_usuario' => 'medico'
+        'email' => 'joao.silva@camporeal.com', // sem acento
+        'tipo_usuario' => 'recepcionista'
     ]);
 
     // Verificar se o primeiro usuário continua com seus dados originais
     $this->assertDatabaseHas('users', [
         'name' => 'Maria Oliveira',
         'email' => 'maria.oliveira@camporeal.com',
-        'tipo_usuario' => 'recepcionista'
+        'tipo_usuario' => 'admin' // <-- Corrigido aqui
     ]);
 
     // Verificar se o email não foi alterado

@@ -161,42 +161,50 @@
             </button>
         </h4>
 
-        <div class="sidebar-title">Usuários</div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('usuarios.create') }}">
-                    <i class="fas fa-user-plus"></i> <span>Cadastrar Usuário</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('usuarios.index') }}">
-                    <i class="fas fa-users"></i> <span>Mostrar Usuários</span>
-                </a>
-            </li>
-        </ul>
+        @if(Auth::user()->tipo_usuario === 'admin')
+            <div class="sidebar-title">Usuários</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('usuarios.create') }}">
+                        <i class="fas fa-user-plus"></i> <span>Cadastrar Usuário</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('usuarios.index') }}">
+                        <i class="fas fa-users"></i> <span>Mostrar Usuários</span>
+                    </a>
+                </li>
+            </ul>
+        @endif
 
-        <div class="sidebar-title">Agenda</div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('agenda.index') }}">
-                    <i class="fas fa-calendar-alt"></i> <span>Ver Agenda</span>
-                </a>
-            </li>
-        </ul>
+        {{-- Agenda para admin e recepcionista --}}
+        @if(Auth::user()->tipo_usuario === 'admin' || Auth::user()->tipo_usuario === 'recepcionista')
+            <div class="sidebar-title">Agenda</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('agenda.index') }}">
+                        <i class="fas fa-calendar-alt"></i> <span>Ver Agenda</span>
+                    </a>
+                </li>
+            </ul>
+        @endif
 
-        <div class="sidebar-title">Médicos</div>
-        <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('medicos.create') }}">
-                    <i class="fas fa-user-md"></i> <span>Cadastrar Médico</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('medicos.index') }}">
-                    <i class="fas fa-stethoscope"></i> <span>Mostrar Médicos</span>
-                </a>
-            </li>
-        </ul>
+        {{-- Apenas para admin --}}
+        @if(Auth::user()->tipo_usuario === 'admin')
+            <div class="sidebar-title">Médicos</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('medicos.create') }}">
+                        <i class="fas fa-user-md"></i> <span>Cadastrar Médico</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{{ route('medicos.index') }}">
+                        <i class="fas fa-stethoscope"></i> <span>Mostrar Médicos</span>
+                    </a>
+                </li>
+            </ul>
+        @endif
 
         <div class="mt-auto">
             <form action="{{ route('logout') }}" method="POST">
