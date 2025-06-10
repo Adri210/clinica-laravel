@@ -46,9 +46,16 @@
             text-decoration: none;
             font-weight: bold;
             transition: background-color 0.3s;
+            margin: 0 5px;
         }
         .btn:hover {
             background-color: #2563eb;
+        }
+        .btn-secondary {
+            background-color: #6b7280;
+        }
+        .btn-secondary:hover {
+            background-color: #4b5563;
         }
     </style>
 </head>
@@ -57,7 +64,10 @@
         <h1>404</h1>
         <h2>Página não encontrada</h2>
         <p>Desculpe, a página que você está procurando não existe ou foi movida.</p>
-        <a href="{{ url('/dashboard') }}" class="btn">Voltar</a>
+        <div>
+            <a href="javascript:history.back()" class="btn">Voltar</a>
+            <a href="{{ url('/dashboard') }}" class="btn btn-secondary">Dashboard</a>
+        </div>
     </div>
 </body>
 </html>
