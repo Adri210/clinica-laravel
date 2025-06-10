@@ -20,6 +20,7 @@ class MedicoController extends Controller
         return view('medicos.create');
     }
 
+    // Add médicos
     public function store(Request $request)
     {
         $request->validate([
@@ -85,6 +86,7 @@ class MedicoController extends Controller
         return view('medicos.edit', compact('medico'));
     }
 
+    //edita medicos
     public function update(Request $request, Medico $medico)
     {
         $request->validate([
@@ -127,7 +129,7 @@ class MedicoController extends Controller
         ]);
 
         try {
-            // Convert periodo to lowercase before saving
+           
             $data = $request->all();
             $data['periodo'] = strtolower($data['periodo']);
             $medico->update($data);
@@ -140,6 +142,7 @@ class MedicoController extends Controller
         }
     }
 
+    //exlui médicos
     public function destroy(Medico $medico)
     {
         try {

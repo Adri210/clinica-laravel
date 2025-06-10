@@ -86,6 +86,7 @@
 </div>
 
 <script>
+// Valida a idade
 document.addEventListener('DOMContentLoaded', function() {
     const dataNascimento = document.getElementById('data_nascimento');
     
@@ -108,7 +109,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     dataNascimento.dispatchEvent(new Event('change'));
-
+ // Validação do formulário (Bootstrap)
     const forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {

@@ -60,6 +60,7 @@
                         <label for="especialidade" class="form-label">Especialidade*</label>
                         <select class="form-control" id="especialidade" name="especialidade" required>
                             {{-- O valor old('especialidade') deve ser usado para pré-selecionar --}}
+                            <option value="" selected disabled>Selecione uma especialidade...</option>
                             <option value="Clínica Geral" {{ old('especialidade') == 'Clínica Geral' ? 'selected' : '' }}>Clínica Geral</option>
                             <option value="Ortopedia" {{ old('especialidade') == 'Ortopedia' ? 'selected' : '' }}>Ortopedia</option>
                             <option value="Cardiologia" {{ old('especialidade') == 'Cardiologia' ? 'selected' : '' }}>Cardiologia</option>
@@ -115,7 +116,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCharCount(sobrenomeInput, sobrenomeCharCount);
     });
 
-    
+    // Funçao para validar a idade
     const dataNascimento = document.getElementById('data_nascimento');
     dataNascimento.addEventListener('change', function() {
         const data = new Date(this.value);
@@ -135,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    
+    // Validação do formulário (Bootstrap)
     const forms = document.querySelectorAll('.needs-validation');
     Array.prototype.slice.call(forms).forEach(function(form) {
         form.addEventListener('submit', function(event) {
@@ -150,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, false);
     });
 
-    
+     // Mantém a especialidade selecionada após erro de validação
     const especialidadeSelect = document.getElementById('especialidade');
     const oldEspecialidade = "{{ old('especialidade') }}";
     if (oldEspecialidade) {

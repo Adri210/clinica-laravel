@@ -31,6 +31,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('logout');
 });
 
+//médicos
 Route::middleware(['auth', 'role:admin'])->group(function () {
     // Usuários (apenas admin pode gerenciar)
     Route::resource('usuarios', UsuarioController::class)->except(['show']);
@@ -40,11 +41,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::put('/medicos/{medico}', [MedicoController::class, 'update'])->name('medicos.update');
     Route::delete('/medicos/{medico}', [MedicoController::class, 'destroy'])->name('medicos.destroy');
 });
+
+
 // Agenda
-
-
 Route::middleware(['auth', 'role:admin,recepcionista'])->group(function () {
-    // Agenda (admin e médicos podem gerenciar)
+    // Agenda (admin e recepcionistas podem gerenciar)
     Route::get('/medicos', [MedicoController::class, 'index'])->name('medicos.index');
     Route::get('/agenda', [AgendaController::class, 'index'])->name('agenda.index');
     Route::get('/agenda/events', [AgendaController::class, 'getEvents'])->name('agenda.events');
