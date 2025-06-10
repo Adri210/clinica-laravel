@@ -51,6 +51,11 @@
             {{ session('success') }}
         </div>
     @endif
+    @if (session('catch'))
+            <div class="alert alert-danger m-3">
+                {{ session('error_duplicado') }}
+            </div>
+        @endif
 
     <table class="table table-bordered table-custom shadow-sm">
         <thead>

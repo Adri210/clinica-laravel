@@ -53,3 +53,10 @@ Route::middleware(['auth', 'role:admin,recepcionista'])->group(function () {
     Route::put('/agenda/{event}', [AgendaController::class, 'update'])->name('agenda.update');
     Route::delete('/agenda/{event}', [AgendaController::class, 'destroy'])->name('agenda.destroy');
 });
+
+Route::fallback(function () {
+    if (Auth::check()) {
+        return response()->view('errors.404', [], 404);
+    }
+    return redirect()->route('login');
+});

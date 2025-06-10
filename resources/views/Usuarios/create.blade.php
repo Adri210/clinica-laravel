@@ -231,7 +231,13 @@ $(document).ready(function(){
             </div>
         @endif
 
-        @if (session('success'))
+        @if (session('catch'))
+            <div class="alert alert-danger m-3">
+                {{ session('error_duplicado') }}
+            </div>
+        @endif
+
+        @if (session('success') )
             <div class="alert alert-success m-3">
                 {{ session('success') }}
             </div>
