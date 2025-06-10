@@ -230,6 +230,24 @@
         @yield('content')
     </div>
 
+    <!-- No seu layout app.blade.php -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="errorToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-danger text-white">
+            <strong class="me-auto">Erro</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="errorMessage">
+        </div>
+    </div>
+</div>
+@if(session('modal_error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            showErrorModal(@json(session('modal_error')));
+        });
+    </script>
+@endif
     <script>
         const toggleSidebar = document.getElementById('toggleSidebar');
         const sidebar = document.getElementById('sidebar');
