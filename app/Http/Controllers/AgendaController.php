@@ -16,7 +16,7 @@ class AgendaController extends Controller
         $medicos = Medico::orderBy('nome')->get(['id', 'nome', 'sobrenome', 'especialidade']);
         return view('agenda.index', compact('medicos'));
     }
-
+    //  Busca os eventos agendados no intervalo fornecido
     public function getEvents(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -72,7 +72,7 @@ class AgendaController extends Controller
             return response()->json(['error' => 'Erro interno ao buscar eventos.'], 500);
         }
     }
-
+//função para adicionar eventos
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -147,7 +147,7 @@ class AgendaController extends Controller
             ], 500);
         }
     }
-
+// função para editar eventos
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -225,7 +225,7 @@ class AgendaController extends Controller
             ], 500);
         }
     }
-
+// função para excluir eventos
     public function destroy($id)
     {
         try {
@@ -246,7 +246,7 @@ class AgendaController extends Controller
             ], 500);
         }
     }
-
+// função par definir cores dos eventos
     private function getEventColor($especialidade)
     {
         $colors = [

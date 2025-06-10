@@ -204,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let calendar;
     let currentEventId = null;
 
+    // Função para exibir notificações toast
     function showToast(message, type = 'info', title = 'Notificação') {
         liveToast.className = 'toast';
         liveToast.classList.add(type);
@@ -219,6 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 5000);
     }
 
+    // Função para o idioma ser PT-BR
     const localeSettings = {
         monthNames: ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'],
         monthNamesShort: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
@@ -237,6 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
         moreLinkText: 'mais',
     };
 
+     // Função principal de inicialização do calendário
     function initCalendar() {
         calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
@@ -265,6 +268,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 url.searchParams.append('start', fetchInfo.start.toISOString());
                 url.searchParams.append('end', fetchInfo.end.toISOString());
 
+                  // Adiciona filtro de médico se não estiver marcado para ver todos
                 if (!viewAllCheckbox.checked && medicoSelect.value) {
                     url.searchParams.append('medico_id', medicoSelect.value);
                 }
@@ -287,6 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         showToast('Erro ao carregar eventos do calendário', 'error');
                     });
             },
+            // Verifica se a data é no passado
             dateClick: function(info) {
                 const clickedDate = info.date;
                 const today = new Date();
@@ -302,6 +307,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 deleteButton.style.display = 'none';
                 currentEventId = null;
 
+                // Configura a data/hora inicial
                 pacienteInput.value = ''; 
                 pacienteCharCount.textContent = '0'; 
                 pacienteCharCount.classList.remove('text-danger'); 
@@ -317,6 +323,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 dataHoraInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
 
+                  // Configura o médico baseado no filtro
                 if (viewAllCheckbox.checked) {
                     document.getElementById('modal-medico-selection').style.display = 'block';
                     modalMedicoIdSelect.value = ''; 
@@ -327,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                     const selectedMedicoOption = medicoSelect.options[medicoSelect.selectedIndex];
                     const medicoSpecialtyText = selectedMedicoOption.text;
-                    const specialtyMatch = medicoSpecialtyText.match(/ - (.*)$/);
+                    const specialtyMatch = medicoSpecialtyText.match(/ - (.*)$/); // Obtém a especialidade do médico selecionado
 
                     if (specialtyMatch && specialtyMatch[1]) {
                         especialidadeInput.value = specialtyMatch[1];
@@ -383,6 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 agendaModal.show();
             },
+             // Personalização da aparência dos eventos
             eventDidMount: function(info) {
                 info.el.setAttribute('title',
                     `Paciente: ${info.event.extendedProps.paciente}\n` +
@@ -401,7 +409,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     info.revert(); 
                     return;
                 }
-
+                // Valida horário comercial
                 const eventHour = eventDate.getHours();
                 const eventMinute = eventDate.getMinutes();
                 if (eventHour < 7 || eventHour > 22 || (eventHour === 22 && eventMinute > 0)) {
@@ -431,7 +439,7 @@ document.addEventListener('DOMContentLoaded', function() {
         calendar.render();
         updateDayEvents();
     }
-
+    // Função para salvar evento (create/update)
     function saveEvent(eventData) {
         const url = eventData.id ? `/agenda/${eventData.id}` : '/agenda';
         const method = eventData.id ? 'PUT' : 'POST';
@@ -483,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return response.json();
         });
     }
-
+     // Função para atualizar lista de eventos do dia
     function updateEvent(eventData) {
         return saveEvent(eventData)
             .then(data => {
@@ -500,7 +508,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 calendar.refetchEvents(); 
             });
     }
-
+    //Funcao para deletar evento
     function deleteEvent(eventId) {
         confirmDeleteModal.show();
         
@@ -536,7 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         };
     }
-
+    // função para atualizar eventos
     function updateDayEvents() {
         const today = new Date();
         const start = new Date(today.setHours(0, 0, 0, 0));
