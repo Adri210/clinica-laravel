@@ -76,10 +76,12 @@ class AgendaController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'paciente' => 'required|string|max:100',
+            'paciente' => 'required|string|max:100|regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
             'medico_id' => 'required|exists:medicos,id',
             'especialidade' => 'required|string|max:255',
             'data_hora' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now'
+        ],[
+            'paciente.regex' => 'O nome do paciente deve conter apenas letras e espaços.',
         ]);
 
         if ($validator->fails()) {
@@ -151,10 +153,12 @@ class AgendaController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'paciente' => 'required|string|max:100',
+            'paciente' => 'required|string|max:100|regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
             'medico_id' => 'required|exists:medicos,id',
             'especialidade' => 'required|string|max:100',
             'data_hora' => 'required|date_format:Y-m-d\TH:i|after_or_equal:now'
+        ],[
+            'paciente.regex' => 'O nome do paciente deve conter apenas letras e espaços.',
         ]);
 
         if ($validator->fails()) {

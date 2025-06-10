@@ -32,8 +32,20 @@ class UsuarioController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nome' => 'required|string|max:20|min:3',
-            'sobrenome' => 'nullable|string|max:20|min:3',
+            'nome' => [
+                'required',
+                'string',
+                'max:20',
+                'min:3',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+            ],
+            'sobrenome' => [
+                'nullable',
+                'string',
+                'max:20',
+                'min:3',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+            ],
             'data_nascimento' => [
                 'required',
                 'date',
@@ -55,8 +67,20 @@ class UsuarioController extends Controller
                 'min:1',
                 'max:6'
             ],
-            'bairro' => 'required|string|max:40|min:3',
-            'cidade' => 'required|string|max:40|min:3',
+            'bairro' => [
+                'required',
+                'string',
+                'max:40',
+                'min:3',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+            ],
+            'cidade' => [
+                'required',
+                'string',
+                'max:40',
+                'min:3',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+            ],
             'estado' => 'required|string|max:2|min:2',
             'tipo_usuario' => 'required|string|in:admin,recepcionista',
             'senha' => 'required|string|min:6|confirmed',
@@ -64,6 +88,7 @@ class UsuarioController extends Controller
             'nome.required' => 'O campo nome é obrigatório.',
             'nome.max' => 'O nome não pode ter mais de 20 caracteres.',
             'nome.min' => 'O nome deve ter no mínimo 3 caracteres.',
+            'nome.regex' => 'O nome deve conter apenas letras e espaços.',
             'sobrenome.max' => 'O sobrenome não pode ter mais de 20 caracteres.',
             'sobrenome.min' => 'O sobrenome deve ter no mínimo 3 caracteres.',
             'data_nascimento.required' => 'O campo data de nascimento é obrigatório.',
@@ -83,12 +108,15 @@ class UsuarioController extends Controller
             'bairro.required' => 'O campo bairro é obrigatório.',
             'bairro.max' => 'O bairro não pode ter mais de 40 caracteres.',
             'bairro.min' => 'O bairro deve ter no mínimo 3 caracteres.',
+            'bairro.regex' => 'O bairro deve conter apenas letras e espaços.',
             'cidade.required' => 'O campo cidade é obrigatório.',
             'cidade.max' => 'A cidade não pode ter mais de 40 caracteres.',
             'cidade.min' => 'A cidade deve ter no mínimo 3 caracteres.',
+            'cidade.regex' => 'A cidade deve conter apenas letras e espaços.',
             'estado.required' => 'O campo estado é obrigatório.',
             'estado.max' => 'O estado deve ter 2 caracteres.',
             'estado.min' => 'O estado deve ter 2 caracteres.',
+            'estado.regex' => 'O estado deve conter apenas letras.',
             'tipo_usuario.required' => 'O campo tipo de usuário é obrigatório.',
             'tipo_usuario.in' => 'O tipo de usuário selecionado é inválido.',
             'senha.required' => 'O campo senha é obrigatório.',
@@ -153,8 +181,20 @@ class UsuarioController extends Controller
             $usuario = User::findOrFail($id);
 
             $request->validate([
-                'nome' => 'required|string|max:20|min:3',
-                'sobrenome' => 'nullable|string|max:20|min:3',
+                'nome' => [
+                    'required',
+                    'string',
+                    'max:20',
+                    'min:3',
+                    'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+                ],
+                'sobrenome' => [
+                    'nullable',
+                    'string',
+                    'max:20',
+                    'min:3',
+                    'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+                ],
                 'data_nascimento' => [
                     'required',
                     'date',
@@ -176,16 +216,30 @@ class UsuarioController extends Controller
                     'min:1',
                     'max:6'
                 ],
-                'bairro' => 'required|string|max:40|min:3',
-                'cidade' => 'required|string|max:40|min:3',
+                'bairro' => [
+                    'required',
+                    'string',
+                    'max:40',
+                    'min:3',
+                    'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+                ],
+                'cidade' => [
+                    'required',
+                    'string',
+                    'max:40',
+                    'min:3',
+                    'regex:/^[a-zA-ZÀ-ÿ\s]+$/u'
+                ],
                 'estado' => 'required|string|max:2|min:2',
                 'tipo_usuario' => 'required|string|in:admin,recepcionista',
             ],[
                 'nome.required' => 'O campo nome é obrigatório.',
                 'nome.max' => 'O nome não pode ter mais de 20 caracteres.',
                 'nome.min' => 'O nome deve ter no mínimo 3 caracteres.',
+                'nome.regex' => 'O nome deve conter apenas letras e espaços.',
                 'sobrenome.max' => 'O sobrenome não pode ter mais de 20 caracteres.',
                 'sobrenome.min' => 'O sobrenome deve ter no mínimo 3 caracteres.',
+                'sobrenome.regex' => 'O sobrenome deve conter apenas letras e espaços.',
                 'data_nascimento.required' => 'O campo data de nascimento é obrigatório.',
                 'data_nascimento.date' => 'A data de nascimento deve ser uma data válida.',
                 'data_nascimento.before_or_equal' => 'A idade mínima deve ser de 15 anos.',
@@ -196,6 +250,7 @@ class UsuarioController extends Controller
                 'rua.required' => 'O campo rua é obrigatório.',
                 'rua.max' => 'A rua não pode ter mais de 40 caracteres.',
                 'rua.min' => 'A rua deve ter no mínimo 3 caracteres.',
+                'rua.regex' => 'A rua deve conter apenas letras e espaços.',
                 'numero.required' => 'O campo número é obrigatório.',
                 'numero.max' => 'O número não pode ter mais de 6 dígitos.',
                 'numero.regex' => 'O número deve conter apenas dígitos.',
@@ -203,9 +258,11 @@ class UsuarioController extends Controller
                 'bairro.required' => 'O campo bairro é obrigatório.',
                 'bairro.max' => 'O bairro não pode ter mais de 40 caracteres.',
                 'bairro.min' => 'O bairro deve ter no mínimo 3 caracteres.',
+                'bairro.regex' => 'O bairro deve conter apenas letras e espaços.',
                 'cidade.required' => 'O campo cidade é obrigatório.',
                 'cidade.max' => 'A cidade não pode ter mais de 40 caracteres.',
                 'cidade.min' => 'A cidade deve ter no mínimo 3 caracteres.',
+                'cidade.regex' => 'A cidade deve conter apenas letras e espaços.',
                 'estado.required' => 'O campo estado é obrigatório.',
                 'estado.max' => 'O estado deve ter 2 caracteres.',
                 'estado.min' => 'O estado deve ter 2 caracteres.',

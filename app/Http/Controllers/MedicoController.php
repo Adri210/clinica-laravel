@@ -28,11 +28,17 @@ class MedicoController extends Controller
                 'required',
                 'string',
                 'max:100',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
                 Rule::unique('medicos')->where(function ($query) use ($request) {
                     return $query->where('sobrenome', $request->sobrenome);
                 })
             ],
-            'sobrenome' => 'required|string|max:100',
+            'sobrenome' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
+            ],
             'data_nascimento' => [
                 'required',
                 'date',
@@ -60,7 +66,9 @@ class MedicoController extends Controller
         ], [
             'nome.required' => 'O campo nome é obrigatório.',
             'nome.unique' => 'Já existe um médico com este nome e sobrenome.',
+            'nome.regex' => 'O nome do médico deve conter apenas letras e espaços.',
             'sobrenome.required' => 'O campo sobrenome é obrigatório.',
+            'sobrenome.regex' => 'O sobrenome do médico deve conter apenas letras e espaços.',
             'data_nascimento.required' => 'A data de nascimento é obrigatória.',
             'especialidade.required' => 'A especialidade é obrigatória.',
             'periodo.required' => 'O período de atendimento é obrigatório.',
@@ -94,12 +102,17 @@ class MedicoController extends Controller
                 'required',
                 'string',
                 'max:100',
-               
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
                 Rule::unique('medicos')->where(function ($query) use ($request) {
                     return $query->where('sobrenome', $request->sobrenome);
                 })->ignore($medico->id)
             ],
-            'sobrenome' => 'required|string|max:100',
+            'sobrenome' => [
+                'required',
+                'string',
+                'max:100',
+                'regex:/^[a-zA-ZÀ-ÿ\s]+$/u',
+            ],
             'data_nascimento' => [
                 'required',
                 'date',
@@ -121,7 +134,9 @@ class MedicoController extends Controller
         ], [
             'nome.required' => 'O campo nome é obrigatório.',
             'nome.unique' => 'Já existe outro médico com este nome e sobrenome.',
+            'nome.regex' => 'O nome do médico deve conter apenas letras e espaços.',
             'sobrenome.required' => 'O campo sobrenome é obrigatório.',
+            'sobrenome.regex' => 'O sobrenome do médico deve conter apenas letras e espaços.',
             'data_nascimento.required' => 'A data de nascimento é obrigatória.',
             'especialidade.required' => 'A especialidade é obrigatória.',
             'periodo.required' => 'O período de atendimento é obrigatório.',

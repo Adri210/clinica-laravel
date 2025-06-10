@@ -195,7 +195,7 @@ $(document).ready(function(){
                         <select class="form-control form-control-sm @error('tipo_usuario') is-invalid @enderror" id="tipo_usuario" name="tipo_usuario">
                             <option value="">Selecione...</option>
                             <option value="admin" {{ old('tipo_usuario') == 'admin' ? 'selected' : '' }}>Admin</option>
-                            <option value="recepcionista" {{ old('tipo_usuario') == 'recepcionista' ? 'selected' : '' }}>Recepcionista</option>
+                            <option value="recepcionista" >Recepcionista</option>
                         </select>
                         @error('tipo_usuario')
                             <div class="invalid-feedback">{{ $message }}</div>

@@ -26,28 +26,30 @@ class MedicoTest extends TestCase
     }
 
 
-    public function test_cadastro_medico_com_dados_validos()
-    {
-        $this->actingAsAdmin();
+public function test_cadastro_medico_com_dados_validos()
+{
+    $this->actingAsAdmin();
 
-        $data = [
-            'nome' => 'João',
-            'sobrenome' => 'Silva',
-            'data_nascimento' => '1980-01-01', 
-            'especialidade' => 'Cardiologia',
-            'periodo' => 'manhã',
-        ];
+    $data = [
+        'nome' => 'João',
+        'sobrenome' => 'Silva',
+        'data_nascimento' => '1980-01-01', 
+        'especialidade' => 'Cardiologia',
+        'periodo' => 'manhã',
+    ];
 
-        $response = $this->post(route('medicos.store'), $data);
-
-        $response->assertRedirect(route('medicos.index'));
-        $this->assertDatabaseHas('medicos', [
-            'nome' => 'João',
-            'sobrenome' => 'Silva',
-            'especialidade' => 'Cardiologia',
-            'periodo' => 'manhã', 
-        ]);
-    }
+    $response = $this->post(route('medicos.store'), $data);
+    $response->assertStatus(302);
+    // Alterando para verificar o redirecionamento para a URL específica
+    $response->assertRedirect('/medicos');
+    
+    $this->assertDatabaseHas('medicos', [
+        'nome' => 'João',
+        'sobrenome' => 'Silva',
+        'especialidade' => 'Cardiologia',
+        'periodo' => 'manhã', 
+    ]);
+}
 
    
 public function test_cadastro_medico_com_dados_invalidos()
@@ -197,7 +199,7 @@ public function test_cadastro_medico_com_dados_invalidos()
         ];
 
         $response = $this->put(route('medicos.update', $medico), $data);
-
+        $response->assertStatus(302);
         $response->assertRedirect(route('medicos.index'));
         $this->assertDatabaseHas('medicos', [
             'id' => $medico->id,
