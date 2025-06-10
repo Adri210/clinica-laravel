@@ -134,8 +134,11 @@ class UsuarioController extends Controller
                     ->withInput()
                     ->with('error_duplicado', 'Já existe um usuário cadastrado com este nome e sobrenome.');
             }
-
-            $email = strtolower($request->nome . '.' . $request->sobrenome);
+            if($request->sobrenome == null){
+                $email = strtolower($request->nome);
+            }else{
+                $email = strtolower($request->nome . '.' . $request->sobrenome);
+            }
             $email = preg_replace('/[^a-z0-9.]/i', '', 
                 preg_replace(
                     ['/[áàãâä]/ui', '/[éèêë]/ui', '/[íìîï]/ui', '/[óòõôö]/ui', '/[úùûü]/ui', '/[ç]/ui'],
@@ -282,7 +285,11 @@ class UsuarioController extends Controller
             }
 
             if ($usuario->name !== $nomeCompleto) {
-                $email = strtolower($request->nome . '.' . $request->sobrenome);
+                if($request->sobrenome == null){
+                    $email = strtolower($request->nome);
+                }else{
+                    $email = strtolower($request->nome . '.' . $request->sobrenome);
+                }
                 $email = preg_replace('/[^a-z0-9.]/i', '', 
                     preg_replace(
                         ['/[áàãâä]/ui', '/[éèêë]/ui', '/[íìîï]/ui', '/[óòõôö]/ui', '/[úùûü]/ui', '/[ç]/ui'],
