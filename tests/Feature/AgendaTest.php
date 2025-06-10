@@ -331,14 +331,14 @@ class AgendaTest extends TestCase
         $agenda1 = Agenda::factory()->create([
             'medico_id' => $medico->id,
             'data_hora' => $dataHora1,
-            'paciente' => 'Paciente 1',
+            'paciente' => 'Paciente um',
             'especialidade' => $medico->especialidade,
         ]);
 
         $agenda2 = Agenda::factory()->create([
             'medico_id' => $medico->id,
             'data_hora' => $dataHora2,
-            'paciente' => 'Paciente 2',
+            'paciente' => 'Paciente dois',
             'especialidade' => $medico->especialidade,
         ]);
 
@@ -346,7 +346,7 @@ class AgendaTest extends TestCase
         $response = $this->putJson(route('agenda.update', $agenda2), [
             'medico_id' => $medico->id,
             'data_hora' => $dataHora1->format('Y-m-d\TH:i'),
-            'paciente' => 'Paciente 2',
+            'paciente' => 'Paciente dois',
             'especialidade' => $medico->especialidade,
         ]);
 
